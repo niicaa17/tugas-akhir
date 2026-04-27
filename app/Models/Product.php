@@ -1,0 +1,46 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Product extends Model
+{
+    protected $fillable = [
+        'umkm_id',
+        'category_id',
+        'nama_produk',
+        'deskripsi',
+        'harga',
+        'stok',
+        'gambar',
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'harga' => 'integer',
+            'stok' => 'integer',
+        ];
+    }
+
+    public function umkm()
+    {
+        return $this->belongsTo(Umkm::class);
+    }
+
+    public function category()
+    {
+        return $this->belongsTo(Category::class);
+    }
+
+    public function keuangans()
+    {
+        return $this->hasMany(Keuangan::class);
+    }
+
+    public function orderDetails()
+    {
+        return $this->hasMany(OrderDetail::class);
+    }
+}
