@@ -169,7 +169,7 @@
             <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
                 <div class="total-line">Total: Rp {{ number_format($order->total_harga, 0, ',', '.') }}</div>
                 <div class="d-flex gap-2">
-                    @if ($order->status == 'pending')
+                    @if ($order->status == 'pending' && auth()->user()->role !== 'admin')
                         <a href="{{ route('payments.create', ['order' => $order->id]) }}" class="btn-soft-primary">Bayar Sekarang</a>
                     @endif
                     <a href="{{ route('orders.index') }}" class="btn-soft-secondary">Kembali</a>

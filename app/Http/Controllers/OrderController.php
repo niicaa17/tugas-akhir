@@ -25,9 +25,11 @@ class OrderController extends Controller
             'selesai' => ['selesai'],
         ];
 
-        $orderQuery = Order::where('user_id', Auth::id())
-            ->with('orderDetails.product')
-            ->latest();
+        $orderQuery = Order::with('orderDetails.product')->latest();
+
+        if (! Auth::user()->isAdmin()) {
+            $orderQuery->where('user_id', Auth::id());
+        }
 
         if (isset($statusMap[$statusTab])) {
             $orderQuery->whereIn('status', $statusMap[$statusTab]);
@@ -121,10 +123,12 @@ class OrderController extends Controller
      */
     public function show(Order $order)
     {
-        // Check if order belongs to current user
-        if ($order->user_id !== Auth::id()) {
+        if (! Auth::user()->isAdmin() && $order->user_id !== Auth::id()) {
             abort(403);
         }
+
+        $order->load('orderDetails.product');
+
         return view('orders.show', compact('order'));
     }
 

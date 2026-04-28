@@ -40,23 +40,27 @@ class PaymentController extends Controller
     {
         $data = $request->validate([
             'order_id' => 'required|exists:orders,id',
-            'metode' => 'required|in:cod,debit,virtual_account',
-            'jumlah' => 'required|integer|min:1',
+            'metode' => 'required|in:cod,transfer,debit,virtual_account',
         ]);
 
         $order = Order::where('id', $data['order_id'])
             ->where('user_id', Auth::id())
             ->firstOrFail();
 
+        $metode = in_array($data['metode'], ['debit', 'virtual_account'], true)
+            ? 'transfer'
+            : $data['metode'];
+
         if ($order->status !== 'pending') {
             return back()->withErrors(['order_id' => 'Pesanan ini tidak dapat dibayar ulang.']);
         }
 
-        if ((int) $data['jumlah'] !== (int) $order->total_harga) {
-            return back()->withErrors(['jumlah' => 'Jumlah pembayaran harus sama dengan total pesanan.']);
-        }
-
-        Payment::create($data);
+        Payment::create([
+            'order_id' => $order->id,
+            'metode' => $metode,
+            'jumlah' => $order->total_harga,
+            'status' => 'pending',
+        ]);
         $order->update(['status' => 'dibayar']);
 
         return redirect()->route('orders.index')->with('success', 'Pembayaran berhasil dikirim');

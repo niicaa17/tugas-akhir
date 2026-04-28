@@ -37,12 +37,17 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::resource('keuangans', KeuanganController::class);
 });
 
+Route::middleware('auth')->group(function () {
+    Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
+    Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
+});
+
 Route::middleware(['auth', 'role:user'])->group(function () {
     Route::get('/user/dashboard', [UserDashboardController::class, 'index'])->name('user.dashboard');
     Route::get('/user/profile', [UserDashboardController::class, 'profile'])->name('user.profile');
     Route::get('/user/products/{product}', [UserDashboardController::class, 'showProduct'])->name('user.products.show');
     Route::resource('carts', CartController::class)->except(['create', 'show', 'edit', 'update', 'destroy']);
-    Route::resource('orders', OrderController::class)->except(['create', 'edit', 'update', 'destroy']);
+    Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
     Route::resource('payments', PaymentController::class)->except(['index', 'edit', 'update', 'destroy']);
 });
 
