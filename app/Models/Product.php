@@ -8,7 +8,6 @@ class Product extends Model
 {
     protected $fillable = [
         'umkm_id',
-        'category_id',
         'nama_produk',
         'deskripsi',
         'harga',
@@ -27,11 +26,6 @@ class Product extends Model
     public function umkm()
     {
         return $this->belongsTo(Umkm::class);
-    }
-
-    public function category()
-    {
-        return $this->belongsTo(Category::class);
     }
 
     public function keuangans()

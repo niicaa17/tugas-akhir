@@ -19,11 +19,6 @@ return new class extends Migration
               ->constrained('umkms')
               ->onDelete('cascade');
 
-        // Relasi ke kategori
-        $table->foreignId('category_id')
-              ->constrained('categories')
-              ->onDelete('cascade');
-
         $table->string('nama_produk');
         $table->text('deskripsi')->nullable();
         $table->integer('harga');

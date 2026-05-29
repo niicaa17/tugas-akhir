@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 
 class UserDashboardController extends Controller
 {
@@ -21,9 +23,7 @@ class UserDashboardController extends Controller
             ->limit(3)
             ->get();
 
-        $categories = Category::orderBy('nama_kategori')->limit(3)->get();
-
-        return view('user.dashboard', compact('topProducts', 'categories'));
+        return view('user.dashboard', compact('topProducts'));
     }
 
     /**
@@ -80,5 +80,51 @@ class UserDashboardController extends Controller
             'cartItemCount',
             'lastOrder'
         ));
+    }
+
+    /**
+     * Update user profile (data + foto).
+     */
+    public function updateProfile(Request $request)
+    {
+        $user = Auth::user();
+
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
+            'nomor_telepon' => ['nullable', 'string', 'max:20'],
+            'alamat' => ['nullable', 'string', 'max:255'],
+            'tanggal_lahir' => ['nullable', 'date', 'before:today'],
+            'jenis_kelamin' => ['nullable', 'in:laki-laki,perempuan'],
+            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
+            'avatar' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048'],
+        ], [
+            'avatar.max' => 'Foto profil maksimal 2 MB.',
+            'avatar.mimes' => 'Format foto harus jpg, jpeg, png, atau webp.',
+            'tanggal_lahir.before' => 'Tanggal lahir harus sebelum hari ini.',
+        ]);
+
+        $user->name = $data['name'];
+        $user->email = $data['email'];
+        $user->nomor_telepon = $data['nomor_telepon'] ?? null;
+        $user->alamat = $data['alamat'] ?? null;
+        $user->tanggal_lahir = $data['tanggal_lahir'] ?? null;
+        $user->jenis_kelamin = $data['jenis_kelamin'] ?? null;
+
+        if (!empty($data['password'])) {
+            $user->password = Hash::make($data['password']);
+        }
+
+        if ($request->hasFile('avatar')) {
+            // Hapus avatar lama jika ada
+            if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
+                Storage::disk('public')->delete($user->avatar);
+            }
+            $user->avatar = $request->file('avatar')->store('avatars', 'public');
+        }
+
+        $user->save();
+
+        return redirect()->route('user.profile')->with('success', 'Profil berhasil diperbarui');
     }
 }

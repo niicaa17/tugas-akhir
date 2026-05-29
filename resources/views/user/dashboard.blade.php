@@ -2,742 +2,767 @@
 
 @section('content')
 <style>
-    .user-dashboard-page .navbar {
-        display: none;
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=Playfair+Display:wght@500;600;700&display=swap');
+
+    :root {
+        --sage: #7CB99A;
+        --sage-light: #A8D4BC;
+        --sage-pale: #E8F4EE;
+        --sage-deep: #4A8A6A;
+        --cream: #F7F4EE;
+        --cream-dark: #EDE8DF;
+        --gold: #C9A84C;
+        --gold-light: #E8C97A;
+        --gold-pale: #FDF6E3;
+        --ink: #1C2B24;
+        --ink-mid: #2E4A3A;
+        --ink-soft: #4A6858;
+        --muted: #8A9E93;
+        --surface: #FFFFFF;
+        --border: rgba(124,185,154,0.18);
+        --border-strong: rgba(124,185,154,0.35);
+        --shadow-sm: 0 1px 4px rgba(28,43,36,0.06);
+        --shadow-md: 0 4px 20px rgba(28,43,36,0.09);
+        --radius: 14px;
+        --radius-sm: 8px;
+        --radius-lg: 20px;
     }
 
-    .user-dashboard-page main.py-4 {
-        padding: 0 !important;
+    /* Override layout.app styles aggressively */
+    #udp-shell,
+    #udp-shell * { font-family: 'DM Sans', -apple-system, sans-serif !important; }
+
+    #udp-shell {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        background: var(--cream);
+        overflow-y: auto;
+        color: var(--ink);
+        -webkit-font-smoothing: antialiased;
     }
 
-    .user-page {
-        min-height: 100vh;
-        background: #9fdc8a;
-        color: #1f2b1d;
-        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-        line-height: 1.45;
-    }
-
-    .user-nav {
-        background: #a7df90;
-        border-bottom: 1px solid rgba(45, 77, 37, 0.08);
+    /* ═══ NAV ═══ */
+    .udp-nav {
         position: sticky;
         top: 0;
-        z-index: 20;
-    }
-
-    .user-nav .container {
-        max-width: 980px;
-    }
-
-    .brand-pill {
-        width: 120px;
-        height: 60px;
-        background: #f5e28f;
-        border-radius: 0 0 30px 30px;
+        z-index: 100;
+        height: 62px;
+        background: rgba(247,244,238,0.95);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+        border-bottom: 1px solid var(--border);
         display: flex;
         align-items: center;
-        justify-content: center;
-        font-size: 11px;
-        font-weight: 800;
-        color: #2f7030;
-        line-height: 1.1;
     }
 
-    .menu-link {
-        text-decoration: none;
-        color: #1d2a1b;
-        font-size: 12px;
-        font-weight: 700;
-        letter-spacing: 0.02em;
-        text-transform: uppercase;
-    }
-
-    .cart-link {
-        border: 1px solid #628d56;
-        border-radius: 999px;
-        padding: 4px 12px;
-        text-decoration: none;
-        color: #1f2b1d;
-        font-size: 12px;
-        font-weight: 600;
-        background: rgba(255, 255, 255, 0.5);
-    }
-
-    .user-content {
-        max-width: 980px;
-    }
-
-    .about-section {
-        display: none;
-    }
-
-    .about-section:target {
-        display: block;
-    }
-
-    .about-section:target ~ .home-hero-wrap,
-    .about-section:target ~ .feature-row,
-    .about-section:target ~ #produk {
-        display: none;
-    }
-
-    .home-hero-wrap {
-        padding-top: 18px;
-        padding-bottom: 12px;
-    }
-
-    .home-hero {
-        background: #efe17e;
-        border-radius: 22px;
-        min-height: 166px;
-        padding: 24px 206px 20px 22px;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .home-hero-title {
-        margin: 0 0 4px;
-        color: #54a04b;
-        font-size: 34px;
-        font-weight: 800;
-        line-height: 1.15;
-    }
-
-    .home-hero-subtitle {
-        margin: 0 0 14px;
-        color: #69a85d;
-        font-size: 18px;
-        font-weight: 600;
-    }
-
-    .home-hero-cta {
-        border: 0;
-        border-radius: 999px;
-        padding: 9px 18px;
-        font-size: 14px;
-        color: #f0f5ea;
-        text-decoration: none;
-        background: #8fa07d;
-        display: inline-block;
-        line-height: 1;
-        font-weight: 700;
-    }
-
-    .home-hero-image {
-        position: absolute;
-        right: 14px;
-        top: 50%;
-        transform: translateY(-50%);
-        width: 140px;
-        height: 120px;
-        object-fit: cover;
-        object-position: center;
-        border-radius: 10px;
-        background: rgba(255, 255, 255, 0.7);
-        display: block;
-    }
-
-    .about-hero {
-        background: #e9dbb8;
-        border-radius: 0 0 58px 58px;
-        min-height: 170px;
-        padding: 26px 20px 36px;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .about-hero::after {
-        content: "";
-        position: absolute;
-        left: -10%;
-        right: -10%;
-        bottom: -58px;
-        height: 100px;
-        background: #9fdc8a;
-        border-radius: 50%;
-    }
-
-    .about-title {
-        color: #5ea34d;
-        font-size: 34px;
-        font-weight: 800;
-        line-height: 1.15;
-        margin-bottom: 6px;
-        position: relative;
-        z-index: 1;
-    }
-
-    .about-subtitle {
-        color: #63a552;
-        font-size: 16px;
-        font-weight: 600;
-        position: relative;
-        z-index: 1;
-    }
-
-    .about-card,
-    .timeline-card,
-    .vision-card,
-    .mission-card {
-        background: #f8efd8;
-        border-radius: 14px;
-        padding: 18px;
-    }
-
-    .about-card {
-        display: flex;
-        gap: 12px;
-        align-items: flex-start;
-    }
-
-    .about-icon {
-        width: 40px;
-        height: 40px;
-        border-radius: 999px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        background: #8db080;
-        color: #fff;
-        font-size: 18px;
-        flex-shrink: 0;
-    }
-
-    .about-heading {
-        font-size: 28px;
-        line-height: 1;
-        font-weight: 700;
-        margin-bottom: 8px;
-        color: #1f2b1d;
-    }
-
-    .about-text {
-        margin: 0;
-        font-size: 15px;
-        line-height: 1.6;
-        color: #1f2b1d;
-    }
-
-    .timeline-card {
-        margin-top: 14px;
-    }
-
-    .timeline-head {
-        font-size: 28px;
-        font-weight: 700;
-        margin-bottom: 12px;
-        color: #1f2b1d;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-
-    .timeline-grid {
-        display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: 12px;
-    }
-
-    .timeline-item {
-        min-height: 142px;
-    }
-
-    .year-pill {
-        display: block;
-        text-align: center;
-        border-radius: 999px;
-        background: #8db080;
-        color: #0f2711;
-        font-weight: 700;
-        font-size: 14px;
-        padding: 4px 10px;
-        margin-bottom: 10px;
-    }
-
-    .timeline-item p {
-        font-size: 12px;
-        line-height: 1.5;
-        margin-bottom: 0;
-        color: #222d20;
-    }
-
-    .vision-mission-grid {
-        margin-top: 14px;
-    }
-
-    .vision-card,
-    .mission-card {
-        min-height: 240px;
-    }
-
-    .panel-head {
-        font-size: 28px;
-        font-weight: 700;
-        margin-bottom: 10px;
-        color: #1f2b1d;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .panel-text,
-    .mission-list {
-        font-size: 15px;
-        line-height: 1.6;
-        margin: 0;
-        color: #2a3927;
-    }
-
-    .mission-list {
-        padding-left: 24px;
-    }
-
-    .mission-list li {
-        margin-bottom: 10px;
-    }
-
-    .mission-list li:last-child {
-        margin-bottom: 0;
-    }
-
-    .feature-row {
-        background: #f8efd8;
-        border-top: 1px solid rgba(60, 85, 55, 0.06);
-        border-bottom: 1px solid rgba(60, 85, 55, 0.06);
-    }
-
-    .feature-card {
-        background: #e1d2ad;
-        border-radius: 14px;
-        padding: 18px;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        text-decoration: none;
-        color: #2f4a2d;
-        min-height: 82px;
-        font-size: 30px;
-        font-weight: 600;
-    }
-
-    .feature-icon {
-        width: 34px;
-        height: 34px;
-        border-radius: 999px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 15px;
-        background: #6da866;
-        color: white;
-        flex-shrink: 0;
-    }
-
-    .feature-icon.favorite {
-        background: #ff6ca8;
-    }
-
-    .section-title {
-        font-size: 28px;
-        margin-right: 8px;
-    }
-
-    .product-card {
-        background: #f6eed6;
-        border-radius: 12px;
-        padding: 10px;
-        height: 100%;
-    }
-
-    .product-image-wrap {
+    .udp-nav-inner {
+        max-width: 1020px;
+        margin: 0 auto;
+        padding: 0 28px;
         width: 100%;
-        aspect-ratio: 5 / 4;
-        border-radius: 8px;
-        overflow: hidden;
-        background: #ece2cb;
-    }
-
-    .product-image {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        object-position: center;
-        display: block;
-    }
-
-    .product-name {
-        font-size: 14px;
-        font-weight: 700;
-        color: #2f4a2d;
-        margin-top: 9px;
-        line-height: 1.2;
-    }
-
-    .product-meta {
-        font-size: 13px;
-        color: #53724e;
-        margin-bottom: 2px;
-    }
-
-    .product-bottom {
-        margin-top: 5px;
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 8px;
+        gap: 20px;
     }
 
-    .sold-badge {
-        display: inline-block;
-        background: #86b37c;
-        color: white;
-        font-size: 10px;
-        border-radius: 999px;
-        padding: 2px 8px;
-        font-weight: 700;
-    }
-
-    .go-badge {
-        display: inline-block;
-        background: #8ea484;
-        color: #fff;
-        font-size: 10px;
-        border-radius: 999px;
-        padding: 2px 8px;
-        font-weight: 700;
-    }
-
-    .category-card {
-        background: #f6eed6;
-        border-radius: 12px;
-        text-align: center;
-        padding: 14px;
-        font-weight: 600;
-        color: #77a46c;
-        font-size: 16px;
+    .udp-brand {
         display: flex;
         align-items: center;
-        justify-content: center;
         gap: 10px;
+        text-decoration: none;
+        flex-shrink: 0;
+        cursor: pointer;
     }
 
-    .category-icon {
-        font-size: 18px;
-        line-height: 1;
-        color: #1f2b1d;
+    .udp-brand-logo {
+        width: 36px; height: 36px;
+        border-radius: 8px;
+        background: var(--gold-pale);
+        border: 1px solid rgba(201,168,76,0.2);
+        overflow: hidden;
+        display: flex; align-items: center; justify-content: center;
     }
 
-    .logout-mini {
-        border: 0;
-        border-radius: 999px;
-        padding: 4px 12px;
-        font-size: 12px;
-        font-weight: 700;
-        background: #f4e58a;
-        color: #1f2b1d;
+    .udp-brand-logo img { width: 100%; height: 100%; object-fit: cover; }
+
+    .udp-brand-name {
+        font-family: 'Playfair Display', serif !important;
+        font-size: 14px; font-weight: 600;
+        color: var(--ink); line-height: 1.2;
     }
 
-    @media (max-width: 991.98px) {
-        .home-hero {
-            padding-right: 168px;
-        }
-
-        .home-hero-title {
-            font-size: 28px;
-        }
-
-        .home-hero-subtitle {
-            font-size: 16px;
-        }
-
-        .home-hero-cta {
-            font-size: 13px;
-        }
-
-        .feature-card {
-            font-size: 20px;
-        }
-
-        .about-title {
-            font-size: 30px;
-        }
-
-        .about-subtitle {
-            font-size: 15px;
-        }
-
-        .about-heading,
-        .timeline-head,
-        .panel-head {
-            font-size: 24px;
-        }
-
-        .about-text,
-        .panel-text,
-        .mission-list {
-            font-size: 14px;
-        }
-
-        .timeline-grid {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-        }
-
-        .timeline-item {
-            min-height: auto;
-        }
+    .udp-brand-sub {
+        font-size: 9.5px; font-weight: 600;
+        letter-spacing: 0.12em; text-transform: uppercase;
+        color: var(--muted);
     }
 
-    @media (max-width: 767.98px) {
-        .home-hero {
-            min-height: 148px;
-            padding: 16px 16px 16px;
-        }
+    .udp-nav-links { display: flex; align-items: center; gap: 2px; }
 
-        .home-hero-title {
-            font-size: 22px;
-            padding-right: 116px;
-        }
+    .udp-nav-link {
+        padding: 7px 13px;
+        border-radius: 7px;
+        text-decoration: none;
+        font-size: 13px; font-weight: 500;
+        color: var(--ink-soft);
+        transition: all 0.17s;
+        cursor: pointer;
+        border: none; background: none;
+        font-family: 'DM Sans', sans-serif !important;
+    }
 
-        .home-hero-subtitle {
-            font-size: 13px;
-            padding-right: 116px;
-        }
+    .udp-nav-link:hover { background: var(--sage-pale); color: var(--sage-deep); }
+    .udp-nav-link.active { background: var(--sage-pale); color: var(--sage-deep); font-weight: 600; }
 
-        .home-hero-cta {
-            font-size: 12px;
-            padding: 8px 14px;
-        }
+    .udp-nav-right { display: flex; align-items: center; gap: 8px; }
 
-        .home-hero-image {
-            width: 100px;
-            height: 86px;
-            right: 10px;
-        }
+    .udp-cart-btn {
+        display: inline-flex; align-items: center; gap: 6px;
+        padding: 7px 14px;
+        background: var(--surface);
+        border: 1px solid var(--border-strong);
+        border-radius: var(--radius-sm);
+        text-decoration: none;
+        font-size: 13px; font-weight: 500;
+        color: var(--ink-soft);
+        transition: all 0.17s;
+    }
 
-        .feature-card {
-            font-size: 16px;
-            min-height: 68px;
-            padding: 14px;
-        }
+    .udp-cart-btn:hover { background: var(--sage-pale); border-color: var(--sage); color: var(--sage-deep); }
 
-        .about-hero {
-            min-height: 180px;
-            padding: 16px 16px 28px;
-            border-radius: 0 0 30px 30px;
-        }
+    .udp-logout-btn {
+        display: inline-flex; align-items: center; gap: 5px;
+        padding: 7px 14px;
+        background: rgba(201,168,76,0.08);
+        border: 1px solid rgba(201,168,76,0.25);
+        border-radius: var(--radius-sm);
+        font-size: 13px; font-weight: 500;
+        color: #8B6914;
+        cursor: pointer;
+        transition: all 0.17s;
+        font-family: 'DM Sans', sans-serif !important;
+    }
 
-        .about-title {
-            font-size: 26px;
-        }
+    .udp-logout-btn:hover { background: rgba(201,168,76,0.18); }
 
-        .about-subtitle {
-            font-size: 13px;
-        }
+    /* ═══ CONTENT ═══ */
+    .udp-page { display: none; }
+    .udp-page.active { display: block; }
 
-        .about-heading,
-        .timeline-head,
-        .panel-head {
-            font-size: 21px;
-        }
+    .udp-wrap {
+        max-width: 1020px;
+        margin: 0 auto;
+        padding: 0 28px 80px;
+    }
 
-        .about-text,
-        .panel-text,
-        .mission-list {
-            font-size: 14px;
-        }
+    /* ═══ HERO ═══ */
+    .udp-hero {
+        margin: 32px 0 30px;
+        background: var(--ink);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        position: relative;
+        display: flex;
+        align-items: center;
+        padding: 38px 42px;
+        min-height: 196px;
+    }
 
-        .timeline-grid {
-            grid-template-columns: 1fr;
-        }
+    .udp-hero::before {
+        content: '';
+        position: absolute; top: -70px; right: -70px;
+        width: 280px; height: 280px;
+        border-radius: 50%;
+        background: rgba(124,185,154,0.07);
+        pointer-events: none;
+    }
+
+    .udp-hero::after {
+        content: '';
+        position: absolute; bottom: -50px; left: 220px;
+        width: 200px; height: 200px;
+        border-radius: 50%;
+        background: rgba(201,168,76,0.05);
+        pointer-events: none;
+    }
+
+    .udp-hero-text { position: relative; z-index: 1; flex: 1; min-width: 0; }
+
+    .udp-hero-eyebrow {
+        font-size: 10.5px; font-weight: 700;
+        letter-spacing: 0.16em; text-transform: uppercase;
+        color: var(--sage-light); margin-bottom: 10px;
+    }
+
+    .udp-hero-title {
+        font-family: 'Playfair Display', serif !important;
+        font-size: 30px; font-weight: 600;
+        color: #fff; line-height: 1.2;
+        margin-bottom: 8px;
+        letter-spacing: -0.01em;
+    }
+
+    .udp-hero-title span { color: var(--gold-light); }
+
+    .udp-hero-sub {
+        font-size: 14px; font-weight: 300;
+        color: rgba(255,255,255,0.45);
+        margin-bottom: 22px;
+        line-height: 1.6;
+        max-width: 340px;
+    }
+
+    .udp-hero-cta {
+        display: inline-flex; align-items: center; gap: 7px;
+        padding: 11px 22px;
+        background: var(--gold);
+        color: #fff;
+        border-radius: var(--radius-sm);
+        text-decoration: none;
+        font-size: 13.5px; font-weight: 600;
+        transition: all 0.2s;
+        box-shadow: 0 3px 12px rgba(201,168,76,0.35);
+        position: relative; z-index: 2;
+        cursor: pointer;
+    }
+
+    .udp-hero-cta:hover {
+        background: #b8953e;
+        transform: translateY(-1px);
+        box-shadow: 0 6px 20px rgba(201,168,76,0.45);
+        color: #fff;
+    }
+
+    .udp-hero-img {
+        position: relative; z-index: 1;
+        width: 160px; height: 160px;
+        border-radius: 14px;
+        object-fit: cover;
+        flex-shrink: 0;
+        margin-left: 36px;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.35);
+        display: block;
+    }
+
+    .udp-hero-img-ph {
+        position: relative; z-index: 1;
+        width: 160px; height: 160px;
+        border-radius: 14px;
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.08);
+        flex-shrink: 0;
+        margin-left: 36px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 36px;
+    }
+
+    /* ═══ QUICK CARDS ═══ */
+    .udp-quick {
+        display: grid;
+        grid-template-columns: repeat(3,1fr);
+        gap: 14px;
+        margin-bottom: 38px;
+    }
+
+    .udp-quick-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 18px 20px;
+        text-decoration: none;
+        color: inherit;
+        display: flex; align-items: center; gap: 14px;
+        transition: all 0.2s;
+        cursor: pointer;
+        position: relative; overflow: hidden;
+    }
+
+    .udp-quick-card::after {
+        content: '';
+        position: absolute;
+        bottom: 0; left: 0; right: 0; height: 2px;
+        background: var(--sage);
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 0.25s;
+    }
+
+    .udp-quick-card.qgold::after { background: var(--gold); }
+    .udp-quick-card.qpink::after { background: #E07FA8; }
+
+    .udp-quick-card:hover {
+        box-shadow: var(--shadow-md);
+        transform: translateY(-2px);
+        border-color: var(--border-strong);
+    }
+
+    .udp-quick-card:hover::after { transform: scaleX(1); }
+
+    .udp-quick-icon {
+        width: 40px; height: 40px;
+        border-radius: 10px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 19px; flex-shrink: 0;
+    }
+
+    .qicon-green { background: var(--sage-pale); }
+    .qicon-gold { background: var(--gold-pale); }
+    .qicon-pink { background: #FEF0F6; }
+
+    .udp-quick-label { font-size: 14px; font-weight: 600; color: var(--ink); }
+    .udp-quick-sub { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+    .udp-quick-arrow { margin-left: auto; color: var(--muted); font-size: 16px; flex-shrink: 0; transition: transform 0.2s; }
+    .udp-quick-card:hover .udp-quick-arrow { transform: translateX(3px); }
+
+    /* ═══ SECTION TITLE ═══ */
+    .udp-section-hd {
+        font-family: 'Playfair Display', serif !important;
+        font-size: 21px; font-weight: 600;
+        color: var(--ink);
+        margin-bottom: 16px;
+    }
+
+    /* ═══ PRODUCT GRID ═══ */
+    .udp-products {
+        display: grid;
+        grid-template-columns: repeat(3,1fr);
+        gap: 16px;
+        margin-bottom: 38px;
+    }
+
+    .udp-prod-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        overflow: hidden;
+        text-decoration: none;
+        color: inherit;
+        display: flex; flex-direction: column;
+        transition: all 0.2s;
+    }
+
+    .udp-prod-card:hover { box-shadow: var(--shadow-md); transform: translateY(-3px); }
+
+    .udp-prod-img-wrap {
+        width: 100%; aspect-ratio: 1/1;
+        overflow: hidden; background: var(--cream);
+        position: relative;
+        padding: 10px;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .udp-prod-img {
+        width: 100%; height: 100%;
+        object-fit: contain; display: block;
+        transition: transform 0.32s;
+    }
+
+    .udp-prod-card:hover .udp-prod-img { transform: scale(1.04); }
+
+    .udp-prod-img-ph {
+        width: 100%; height: 100%;
+        display: flex; align-items: center; justify-content: center;
+        color: var(--muted); font-size: 13px;
+    }
+
+    .udp-sold-ov {
+        position: absolute; top: 9px; left: 9px;
+        background: rgba(28,43,36,0.72);
+        color: #fff;
+        font-size: 10.5px; font-weight: 600;
+        padding: 3px 8px; border-radius: 20px;
+        backdrop-filter: blur(4px);
+    }
+
+    .udp-habis-ov {
+        position: absolute; top: 9px; right: 9px;
+        background: linear-gradient(135deg, #d1546a, #b8364c);
+        color: #fff;
+        font-size: 10.5px; font-weight: 700;
+        padding: 4px 10px; border-radius: 20px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        box-shadow: 0 2px 8px rgba(209,84,106,0.4);
+    }
+
+    .udp-prod-card.udp-habis .udp-prod-img,
+    .udp-prod-card.udp-habis .udp-prod-img-ph {
+        filter: grayscale(0.7) opacity(0.65);
+    }
+
+    .udp-prod-card.udp-habis .udp-buy-btn {
+        background: rgba(209,84,106,0.12);
+        color: #b8364c;
+        cursor: not-allowed;
+    }
+
+    .udp-prod-body { padding: 13px 15px 15px; flex: 1; display: flex; flex-direction: column; }
+    .udp-prod-name { font-size: 14px; font-weight: 600; color: var(--ink); line-height: 1.3; margin-bottom: 4px; }
+    .udp-prod-price {
+        font-family: 'Playfair Display', serif !important;
+        font-size: 15px; font-weight: 600;
+        color: var(--ink); margin-bottom: 10px;
+    }
+    .udp-prod-foot { margin-top: auto; display: flex; align-items: center; justify-content: space-between; }
+    .udp-sold-lbl { font-size: 11px; font-weight: 500; color: var(--muted); }
+    .udp-buy-btn {
+        display: inline-flex; align-items: center;
+        padding: 5px 12px;
+        background: var(--sage-pale);
+        color: var(--sage-deep);
+        border-radius: 20px;
+        font-size: 12px; font-weight: 600;
+    }
+
+    /* ═══ CATEGORIES ═══ */
+    .udp-cats {
+        display: grid;
+        grid-template-columns: repeat(3,1fr);
+        gap: 12px;
+        margin-bottom: 38px;
+    }
+
+    .udp-cat {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 15px 18px;
+        display: flex; align-items: center; gap: 12px;
+        font-size: 14px; font-weight: 500;
+        color: var(--ink-soft);
+        transition: all 0.18s;
+    }
+
+    .udp-cat:hover { background: var(--sage-pale); border-color: var(--sage); color: var(--sage-deep); }
+    .udp-cat-icon { font-size: 21px; flex-shrink: 0; }
+
+    /* ═══ ABOUT ═══ */
+    .udp-about-hero {
+        background: var(--ink);
+        border-radius: var(--radius-lg);
+        padding: 38px 42px;
+        margin: 32px 0 26px;
+        position: relative; overflow: hidden;
+    }
+
+    .udp-about-hero::before {
+        content: '';
+        position: absolute; top: -50px; right: -50px;
+        width: 220px; height: 220px;
+        border-radius: 50%;
+        background: rgba(124,185,154,0.07);
+        pointer-events: none;
+    }
+
+    .udp-ah-eye {
+        font-size: 10.5px; font-weight: 700;
+        letter-spacing: 0.16em; text-transform: uppercase;
+        color: var(--sage-light); margin-bottom: 10px;
+        position: relative; z-index: 1;
+    }
+
+    .udp-ah-title {
+        font-family: 'Playfair Display', serif !important;
+        font-size: 28px; font-weight: 600;
+        color: #fff; margin-bottom: 8px;
+        position: relative; z-index: 1;
+    }
+
+    .udp-ah-sub {
+        font-size: 14px; font-weight: 300;
+        color: rgba(255,255,255,0.42);
+        position: relative; z-index: 1;
+    }
+
+    .udp-acard {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 22px 24px;
+        margin-bottom: 16px;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .udp-acard-hd {
+        display: flex; align-items: center; gap: 12px;
+        margin-bottom: 14px;
+    }
+
+    .udp-acard-icon {
+        width: 36px; height: 36px;
+        border-radius: 9px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 17px; flex-shrink: 0;
+        background: var(--sage-pale);
+    }
+
+    .udp-acard-icon.gold { background: var(--gold-pale); }
+
+    .udp-acard-title {
+        font-family: 'Playfair Display', serif !important;
+        font-size: 17px; font-weight: 600; color: var(--ink);
+    }
+
+    .udp-acard-text { font-size: 14.5px; color: var(--ink-soft); line-height: 1.7; }
+
+    .udp-tl-grid {
+        display: grid;
+        grid-template-columns: repeat(4,1fr);
+        gap: 12px; margin-top: 16px;
+    }
+
+    .udp-tl-item {
+        background: var(--cream);
+        border-radius: 10px; padding: 14px;
+        border: 1px solid var(--border);
+    }
+
+    .udp-year {
+        display: inline-block;
+        background: var(--sage); color: #fff;
+        font-size: 11px; font-weight: 700;
+        padding: 3px 10px; border-radius: 20px;
+        margin-bottom: 9px;
+    }
+
+    .udp-tl-text { font-size: 12.5px; color: var(--ink-soft); line-height: 1.6; }
+
+    .udp-vm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+
+    .udp-mission-list {
+        padding-left: 18px;
+        font-size: 14.5px; color: var(--ink-soft); line-height: 1.7;
+        margin: 0;
+    }
+
+    .udp-mission-list li { margin-bottom: 8px; }
+    .udp-mission-list li:last-child { margin-bottom: 0; }
+
+    /* ═══ EMPTY ═══ */
+    .udp-empty {
+        text-align: center; padding: 48px 20px;
+        background: var(--surface); border-radius: var(--radius);
+        border: 1px solid var(--border); margin-bottom: 38px;
+    }
+
+    .udp-empty-icon { font-size: 30px; margin-bottom: 10px; opacity: 0.4; }
+    .udp-empty-title { font-size: 14.5px; font-weight: 600; color: var(--ink-soft); }
+
+    /* ═══ RESPONSIVE ═══ */
+    @media (max-width: 800px) {
+        .udp-products, .udp-quick { grid-template-columns: repeat(2,1fr); }
+        .udp-tl-grid { grid-template-columns: repeat(2,1fr); }
+        .udp-vm-grid { grid-template-columns: 1fr; }
+        .udp-hero { padding: 28px 24px; }
+        .udp-hero-img, .udp-hero-img-ph { width: 120px; height: 120px; margin-left: 18px; }
+        .udp-hero-title { font-size: 24px; }
+        .udp-nav-links { display: none; }
+    }
+
+    @media (max-width: 560px) {
+        .udp-wrap { padding: 0 16px 60px; }
+        .udp-nav-inner { padding: 0 16px; }
+        .udp-products { grid-template-columns: repeat(2,1fr); gap: 10px; }
+        .udp-cats { grid-template-columns: 1fr 1fr; }
+        .udp-quick { grid-template-columns: 1fr; }
+        .udp-hero-img, .udp-hero-img-ph { display: none; }
+        .udp-tl-grid { grid-template-columns: 1fr; }
     }
 </style>
 
-<script>
-    document.body.classList.add('user-dashboard-page');
-</script>
+{{-- Portal: covers the entire viewport over layouts.app --}}
+<div id="udp-shell">
 
-<div class="user-page" id="home">
-    <nav class="user-nav py-2">
-        <div class="container d-flex align-items-center justify-content-between gap-3">
-            <div class="d-flex align-items-center gap-4">
-                <div class="brand-pill">RUMAH<br>RIMPANG</div>
-                <a href="#home" class="menu-link">Home</a>
-                <a href="#produk" class="menu-link">Shop</a>
-                <a href="#about-section" class="menu-link">About Us</a>
-                <a href="{{ route('user.profile') }}" class="menu-link">Saya</a>
+    {{-- ── NAV ── --}}
+    <nav class="udp-nav">
+        <div class="udp-nav-inner">
+            <div class="udp-brand" onclick="udpShow('home')">
+                <div class="udp-brand-logo">
+                    <img src="{{ asset('images/logo.png') }}" alt="Logo">
+                </div>
+                <div>
+                    <div class="udp-brand-name">Rumah Rimpang</div>
+                    <div class="udp-brand-sub">Herbal UMKM</div>
+                </div>
             </div>
-            <div class="d-flex align-items-center gap-2">
-                <a href="{{ route('carts.index') }}" class="cart-link">Keranjang</a>
-                <form action="{{ route('logout') }}" method="POST" class="m-0">
+
+            <div class="udp-nav-links">
+                <button class="udp-nav-link active" id="nl-home" onclick="udpShow('home')">Home</button>
+                <button class="udp-nav-link" id="nl-shop" onclick="udpShow('home'); setTimeout(()=>document.getElementById('udp-produk')?.scrollIntoView({behavior:'smooth'}),80)">Shop</button>
+                <button class="udp-nav-link" id="nl-about" onclick="udpShow('about')">About Us</button>
+                <a href="{{ route('user.profile') }}" class="udp-nav-link">Profil</a>
+            </div>
+
+            <div class="udp-nav-right">
+                <a href="{{ route('carts.index') }}" class="udp-cart-btn">🛒 Keranjang</a>
+                <form action="{{ route('logout') }}" method="POST" style="margin:0">
                     @csrf
-                    <button type="submit" class="logout-mini">Logout</button>
+                    <button type="submit" class="udp-logout-btn">Keluar</button>
                 </form>
             </div>
         </div>
     </nav>
 
-    <div id="about-section" class="about-section">
-        <div class="container user-content py-0">
-            <div class="about-hero mb-3">
-                <h3 class="about-title">Tentang Rumah Rimpang 🌿</h3>
-                <p class="about-subtitle mb-0">Produsen minuman herbal berbahan rimpang dari Desa Suka Maju Mestong</p>
+    {{-- ══════════ HOME PAGE ══════════ --}}
+    <div class="udp-page active" id="udp-home">
+    <div class="udp-wrap">
+
+        {{-- Hero --}}
+        @php $heroImg = $topProducts->first()?->gambar ? asset('storage/'.$topProducts->first()->gambar) : null; @endphp
+        <div class="udp-hero">
+            <div class="udp-hero-text">
+                <div class="udp-hero-eyebrow">Produk Herbal Pilihan</div>
+                <h1 class="udp-hero-title">Selamat Datang di<br><span>Rumah Rimpang</span> 🌿</h1>
+                <p class="udp-hero-sub">Minuman herbal segar dari rimpang pilihan, langsung dari kebun ke tanganmu.</p>
+                <a href="#" class="udp-hero-cta" onclick="document.getElementById('udp-produk')?.scrollIntoView({behavior:'smooth'});return false;">
+                    Belanja Sekarang →
+                </a>
             </div>
-        </div>
-
-        <div class="container user-content pb-4">
-            <div class="about-card mb-3">
-                <span class="about-icon">🌱</span>
-                <div>
-                    <h4 class="about-heading">Tentang Kami</h4>
-                    <p class="about-text">
-                        Rumah Rimpang merupakan usaha berbasis kelompok tani dari Desa Suka Maju, Mestong,
-                        yang berfokus pada pengolahan minuman herbal berbahan dasar rimpang seperti jahe dan kunyit.
-                        Usaha ini lahir dari semangat kebersamaan untuk mengembangkan potensi hasil pertanian
-                        menjadi produk bernilai tambah.
-                    </p>
-                </div>
-            </div>
-
-            <div class="timeline-card">
-                <h4 class="timeline-head">📖 Sejarah Singkat</h4>
-                <div class="timeline-grid">
-                    <div class="timeline-item">
-                        <span class="year-pill">2020</span>
-                        <p>Kelompok tani didirikan pada tahun 2020 untuk mengembangkan usaha bersama. Pada awalnya, kelompok ini berfokus pada kegiatan budidaya dan membangun kebersamaan antar anggota.</p>
-                    </div>
-                    <div class="timeline-item">
-                        <span class="year-pill">2022</span>
-                        <p>Perkembangan signifikan terjadi pada tahun 2022, ketika kelompok tani mulai berinovasi mengolah hasil panen menjadi produk wedang jahe serbuk dan kunyit asam cair.</p>
-                    </div>
-                    <div class="timeline-item">
-                        <span class="year-pill">2023</span>
-                        <p>Tahun 2023 menjadi titik signifikan dengan mulainya fasilitas bottling modern. Pada tahun ini, ibu-ibu kelompok tani melahirkan merek Rumah Rimpang dan berperan dalam pengolahan produk, sementara bapak-bapak fokus pada budidaya.</p>
-                    </div>
-                    <div class="timeline-item">
-                        <span class="year-pill">2024</span>
-                        <p>Sebagai bentuk komitmen profesionalisme, pada akhir tahun 2024 kelompok ini resmi memiliki legalitas melalui akta notaris, sehingga semakin memperkuat pengembangan usaha ke depan.</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="row g-3 vision-mission-grid">
-                <div class="col-md-6">
-                    <div class="vision-card h-100">
-                        <h4 class="panel-head">🏆 Visi</h4>
-                        <p class="panel-text">Menjadi produsen minuman herbal berbahan dasar jahe dan kunyit yang terkemuka dan terpercaya, dengan jaminan keamanan produk serta menghadirkan cita rasa otentik dan inovatif.</p>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="mission-card h-100">
-                        <h4 class="panel-head">✳ Misi</h4>
-                        <ol class="mission-list">
-                            <li>Menghasilkan produk minuman herbal yang berkualitas tinggi, aman, dan berbahan alami.</li>
-                            <li>Mengembangkan inovasi varian rasa sesuai tren.</li>
-                            <li>Memperluas jangkauan pasar agar produk lebih dikenal masyarakat.</li>
-                        </ol>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    @php
-        $heroImage = $topProducts->first()?->gambar ? asset('storage/' . $topProducts->first()->gambar) : null;
-    @endphp
-
-    <div class="container user-content home-hero-wrap">
-        <div class="home-hero">
-            <h3 class="home-hero-title">Selamat Datang! 🌿</h3>
-            <p class="home-hero-subtitle">Minuman herbal segar untuk harimu</p>
-            <a href="#produk" class="home-hero-cta">Belanja Sekarang</a>
-            @if ($heroImage)
-                <img src="{{ $heroImage }}" alt="Produk unggulan" class="home-hero-image">
+            @if($heroImg)
+                <img src="{{ $heroImg }}" alt="Produk unggulan" class="udp-hero-img">
             @else
-                <div class="home-hero-image d-flex align-items-center justify-content-center text-muted">Foto</div>
+                <div class="udp-hero-img-ph">🌿</div>
             @endif
         </div>
-    </div>
 
-    <div class="feature-row py-4 mb-3">
-        <div class="container user-content">
-            <div class="row g-3">
-                <div class="col-md-4">
-                    <a href="{{ route('carts.index') }}" class="feature-card">
-                        <span class="feature-icon">🛒</span>
-                        <span>keranjang Saya</span>
-                    </a>
-                </div>
-                <div class="col-md-4">
-                    <a href="{{ route('orders.index') }}" class="feature-card">
-                        <span class="feature-icon">🧾</span>
-                        <span>Pesanan Saya</span>
-                    </a>
-                </div>
-                <div class="col-md-4">
-                    <div class="feature-card">
-                        <span class="feature-icon favorite">💗</span>
-                        <span>Favorite</span>
-                    </div>
-                </div>
+        {{-- Quick access --}}
+        <div class="udp-quick">
+            <a href="{{ route('carts.index') }}" class="udp-quick-card">
+                <div class="udp-quick-icon qicon-green">🛒</div>
+                <div><div class="udp-quick-label">Keranjang</div><div class="udp-quick-sub">Lihat pilihan kamu</div></div>
+                <span class="udp-quick-arrow">→</span>
+            </a>
+            <a href="{{ route('orders.index') }}" class="udp-quick-card qgold">
+                <div class="udp-quick-icon qicon-gold">🧾</div>
+                <div><div class="udp-quick-label">Pesanan Saya</div><div class="udp-quick-sub">Lacak status pembelian</div></div>
+                <span class="udp-quick-arrow">→</span>
+            </a>
+            <div class="udp-quick-card qpink" style="cursor:default">
+                <div class="udp-quick-icon qicon-pink">💗</div>
+                <div><div class="udp-quick-label">Favorit</div><div class="udp-quick-sub">Produk yang kamu sukai</div></div>
+                <span class="udp-quick-arrow">→</span>
             </div>
         </div>
-    </div>
 
-    <div class="container user-content py-2 pb-5" id="produk">
-        <h4 class="fw-bold mb-3"><span class="section-title">🔥</span>Produk Terlaris</h4>
-        <div class="row g-4 mb-4">
-            @forelse ($topProducts as $product)
-                <div class="col-md-4">
-                    <a href="{{ route('user.products.show', $product) }}" class="text-decoration-none d-block">
-                    <div class="product-card">
-                        <div class="product-image-wrap">
-                            @if ($product->gambar)
-                                <img src="{{ asset('storage/' . $product->gambar) }}" alt="{{ $product->nama_produk }}" class="product-image">
-                            @else
-                                <div class="product-image d-flex align-items-center justify-content-center text-muted">No Image</div>
-                            @endif
-                        </div>
-                        <div class="product-name">{{ $product->nama_produk }}</div>
-                        <div class="product-meta">Rp {{ number_format($product->harga, 0, ',', '.') }}</div>
-                        <div class="product-bottom">
-                            <span class="sold-badge">terjual {{ (int) ($product->total_terjual ?? 0) }}</span>
-                            <span class="go-badge">Beli ›</span>
+        {{-- Products --}}
+        <div id="udp-produk">
+            <div class="udp-section-hd">🔥 Produk Terlaris</div>
+            @if($topProducts->count())
+            <div class="udp-products">
+                @foreach($topProducts as $product)
+                @php $isHabis = ($product->stok ?? 0) <= 0; @endphp
+                <a href="{{ route('user.products.show', $product) }}" class="udp-prod-card {{ $isHabis ? 'udp-habis' : '' }}">
+                    <div class="udp-prod-img-wrap">
+                        @if($product->gambar)
+                            <img src="{{ asset('storage/'.$product->gambar) }}" alt="{{ $product->nama_produk }}" class="udp-prod-img">
+                        @else
+                            <div class="udp-prod-img-ph">No Image</div>
+                        @endif
+                        @if($product->total_terjual ?? 0)
+                            <span class="udp-sold-ov">{{ (int)$product->total_terjual }}× terjual</span>
+                        @endif
+                        @if($isHabis)
+                            <span class="udp-habis-ov">Habis</span>
+                        @endif
+                    </div>
+                    <div class="udp-prod-body">
+                        <div class="udp-prod-name">{{ $product->nama_produk }}</div>
+                        <div class="udp-prod-price">Rp {{ number_format($product->harga, 0, ',', '.') }}</div>
+                        <div class="udp-prod-foot">
+                            <span class="udp-sold-lbl">
+                                @if($isHabis)
+                                    Stok habis
+                                @else
+                                    {{ $product->total_terjual ? 'Terjual '.(int)$product->total_terjual : 'Produk baru' }}
+                                @endif
+                            </span>
+                            <span class="udp-buy-btn">{{ $isHabis ? 'Habis' : 'Beli →' }}</span>
                         </div>
                     </div>
-                    </a>
-                </div>
-            @empty
-                <div class="col-12">
-                    <div class="alert alert-light border-0">Belum ada data produk.</div>
-                </div>
-            @endforelse
+                </a>
+                @endforeach
+            </div>
+            @else
+            <div class="udp-empty"><div class="udp-empty-icon">📦</div><div class="udp-empty-title">Belum ada produk</div></div>
+            @endif
         </div>
 
-        <h4 class="fw-bold mb-3"><span class="section-title">🍃</span>Kategor Produk</h4>
-        @php
-            $categoryIcons = ['☕', '🥤', '📦'];
-        @endphp
-        <div class="row g-4">
-            @forelse ($categories as $category)
-                <div class="col-md-4">
-                    <div class="category-card">
-                        <span class="category-icon">{{ $categoryIcons[$loop->index % count($categoryIcons)] }}</span>
-                        <span>{{ $category->nama_kategori }}</span>
-                    </div>
-                </div>
-            @empty
-                <div class="col-md-4">
-                    <div class="category-card"><span class="category-icon">☕</span><span>Wedang</span></div>
-                </div>
-                <div class="col-md-4">
-                    <div class="category-card"><span class="category-icon">🥤</span><span>Kitsaju</span></div>
-                </div>
-                <div class="col-md-4">
-                    <div class="category-card"><span class="category-icon">📦</span><span>Paketan</span></div>
-                </div>
-            @endforelse
-        </div>
     </div>
-</div>
+    </div>
+
+    {{-- ══════════ ABOUT PAGE ══════════ --}}
+    <div class="udp-page" id="udp-about">
+    <div class="udp-wrap">
+
+        <div class="udp-about-hero">
+            <div class="udp-ah-eye">Kenali Kami</div>
+            <h2 class="udp-ah-title">Tentang Rumah Rimpang 🌿</h2>
+            <p class="udp-ah-sub">Produsen minuman herbal berbahan rimpang dari Desa Suka Maju, Mestong</p>
+        </div>
+
+        <div class="udp-acard">
+            <div class="udp-acard-hd">
+                <div class="udp-acard-icon">🌱</div>
+                <div class="udp-acard-title">Tentang Kami</div>
+            </div>
+            <p class="udp-acard-text">
+                Rumah Rimpang merupakan usaha berbasis kelompok tani dari Desa Suka Maju, Mestong,
+                yang berfokus pada pengolahan minuman herbal berbahan dasar rimpang seperti jahe dan kunyit.
+                Usaha ini lahir dari semangat kebersamaan untuk mengembangkan potensi hasil pertanian
+                menjadi produk bernilai tambah bagi masyarakat lokal.
+            </p>
+        </div>
+
+        <div class="udp-acard">
+            <div class="udp-acard-hd">
+                <div class="udp-acard-icon">📖</div>
+                <div class="udp-acard-title">Sejarah Singkat</div>
+            </div>
+            <div class="udp-tl-grid">
+                <div class="udp-tl-item"><span class="udp-year">2020</span><p class="udp-tl-text">Kelompok tani didirikan untuk mengembangkan usaha bersama, awalnya berfokus pada kegiatan budidaya dan membangun kebersamaan.</p></div>
+                <div class="udp-tl-item"><span class="udp-year">2022</span><p class="udp-tl-text">Mulai berinovasi mengolah hasil panen menjadi produk wedang jahe serbuk dan kunyit asam cair yang bernilai jual tinggi.</p></div>
+                <div class="udp-tl-item"><span class="udp-year">2023</span><p class="udp-tl-text">Fasilitas bottling modern beroperasi. Merek Rumah Rimpang lahir dari ibu-ibu kelompok tani yang memimpin pengolahan produk.</p></div>
+                <div class="udp-tl-item"><span class="udp-year">2024</span><p class="udp-tl-text">Kelompok resmi mendapat legalitas melalui akta notaris, memperkuat fondasi pengembangan usaha secara profesional.</p></div>
+            </div>
+        </div>
+
+        <div class="udp-vm-grid">
+            <div class="udp-acard" style="margin-bottom:0">
+                <div class="udp-acard-hd">
+                    <div class="udp-acard-icon gold">🏆</div>
+                    <div class="udp-acard-title">Visi</div>
+                </div>
+                <p class="udp-acard-text">Menjadi produsen minuman herbal berbahan dasar jahe dan kunyit yang terkemuka dan terpercaya, dengan jaminan keamanan produk serta menghadirkan cita rasa otentik dan inovatif.</p>
+            </div>
+            <div class="udp-acard" style="margin-bottom:0">
+                <div class="udp-acard-hd">
+                    <div class="udp-acard-icon">✳</div>
+                    <div class="udp-acard-title">Misi</div>
+                </div>
+                <ol class="udp-mission-list">
+                    <li>Menghasilkan produk minuman herbal berkualitas tinggi, aman, dan berbahan alami.</li>
+                    <li>Mengembangkan inovasi varian rasa sesuai tren dan kebutuhan pasar.</li>
+                    <li>Memperluas jangkauan pasar agar produk lebih dikenal masyarakat luas.</li>
+                </ol>
+            </div>
+        </div>
+
+        <div style="height:40px"></div>
+
+    </div>
+    </div>
+
+</div>{{-- /udp-shell --}}
+
+<script>
+    function udpShow(page) {
+        document.querySelectorAll('.udp-page').forEach(el => el.classList.remove('active'));
+        document.getElementById('udp-' + page)?.classList.add('active');
+        document.querySelectorAll('[id^="nl-"]').forEach(el => el.classList.remove('active'));
+        document.getElementById('nl-' + page)?.classList.add('active');
+        document.getElementById('udp-shell').scrollTo({ top: 0, behavior: 'smooth' });
+    }
+</script>
 @endsection

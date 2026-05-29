@@ -10,6 +10,11 @@ class Order extends Model
         'user_id',
         'total_harga',
         'status',
+        'penerima_nama',
+        'alamat_lengkap',
+        'kota',
+        'kode_pos',
+        'nomor_telepon',
     ];
 
     protected function casts(): array
@@ -27,5 +32,10 @@ class Order extends Model
     public function orderDetails()
     {
         return $this->hasMany(OrderDetail::class);
+    }
+
+    public function payments()
+    {
+        return $this->hasMany(Payment::class);
     }
 }

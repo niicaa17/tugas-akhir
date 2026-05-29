@@ -25,6 +25,11 @@ class Umkm extends Model
         return $this->hasMany(Product::class);
     }
 
+    public function members()
+    {
+        return $this->hasMany(Member::class);
+    }
+
     public function keuangans()
     {
         return $this->hasMany(Keuangan::class);

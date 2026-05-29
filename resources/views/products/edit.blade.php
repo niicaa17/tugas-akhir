@@ -1,73 +1,147 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="min-vh-100" style="background: #a0e29c;">
-    <div class="container py-5">
-        <div class="row justify-content-center">
-            <div class="col-lg-8">
-                <div class="card rounded-4 border-0" style="background: rgba(255,255,255,0.95);">
-                    <div class="card-body p-5">
-                        <div class="d-flex justify-content-between align-items-center mb-4">
-                            <h2 class="fw-bold">Edit Produk</h2>
-                            <a href="{{ route('products.index') }}" class="btn btn-outline-secondary">Kembali</a>
-                        </div>
+@verbatim
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap');
 
-                        <form action="{{ route('products.update', $product) }}" method="POST" enctype="multipart/form-data">
-                            @csrf
-                            @method('PUT')
+    :root {
+        --sage: #7CB99A;
+        --sage-light: #A8D4BC;
+        --sage-pale: #E8F4EE;
+        --sage-deep: #4A8A6A;
+        --cream: #F7F4EE;
+        --gold: #C9A84C;
+        --gold-light: #E8C97A;
+        --ink: #1C2B24;
+        --ink-mid: #2E4A3A;
+        --muted: #8A9E93;
+        --surface: #FFFFFF;
+        --border: rgba(124, 185, 154, 0.18);
+        --border-strong: rgba(124, 185, 154, 0.35);
+        --radius: 14px;
+        --radius-sm: 8px;
+        --radius-lg: 20px;
+    }
 
-                            <div class="mb-3">
-                                <label class="form-label">Brand</label>
-                                <select name="umkm_id" class="form-select @error('umkm_id') is-invalid @enderror">
-                                    <option value="">Pilih Brand</option>
-                                    @foreach ($umkms as $umkm)
-                                        <option value="{{ $umkm->id }}" {{ old('umkm_id', $product->umkm_id) == $umkm->id ? 'selected' : '' }}>{{ $umkm->nama_umkm }}</option>
-                                    @endforeach
-                                </select>
-                                @error('umkm_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                            </div>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'DM Sans', -apple-system, sans-serif; background: var(--cream); color: var(--ink); }
+    .layout { display: flex; min-height: 100vh; }
+    .sidebar { width: 260px; background: var(--ink); position: fixed; top: 0; left: 0; height: 100vh; overflow-y: auto; display: flex; flex-direction: column; z-index: 100; }
+    .sidebar-brand { padding: 28px 24px 24px; border-bottom: 1px solid rgba(255,255,255,0.06); display: flex; align-items: center; gap: 12px; }
+    .sidebar-logo-wrap { width: 42px; height: 42px; border-radius: 10px; overflow: hidden; background: var(--sage-pale); display: flex; align-items: center; justify-content: center; }
+    .sidebar-logo-wrap img { width: 100%; height: 100%; object-fit: cover; }
+    .sidebar-brand-name { font-family: 'Playfair Display', Georgia, serif; font-size: 15px; font-weight: 600; color: #fff; line-height: 1.2; }
+    .sidebar-brand-role { font-size: 10.5px; font-weight: 500; color: var(--sage-light); letter-spacing: 0.12em; text-transform: uppercase; margin-top: 2px; }
+    .sidebar-nav { padding: 20px 14px; flex: 1; display: flex; flex-direction: column; gap: 2px; }
+    .nav-section-label { font-size: 10px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); padding: 16px 10px 8px; }
+    .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: var(--radius-sm); text-decoration: none; color: rgba(255,255,255,0.58); font-size: 13.5px; transition: all 0.2s ease; position: relative; }
+    .nav-item:hover, .nav-item.active { background: rgba(124,185,154,0.18); color: var(--sage-light); }
+    .nav-item.active::before { content: ''; position: absolute; left: 0; top: 6px; bottom: 6px; width: 3px; background: var(--sage); border-radius: 0 2px 2px 0; }
+    .nav-icon { width: 18px; text-align: center; font-size: 15px; }
+    .sidebar-footer { padding: 16px 14px 24px; border-top: 1px solid rgba(255,255,255,0.06); display: flex; flex-direction: column; gap: 6px; }
+    .profile-link { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; background: rgba(124, 185, 154, 0.12); color: #A8D4BC; font-size: 13.5px; text-decoration: none; transition: all 0.2s; }
+    .profile-link:hover { background: rgba(124, 185, 154, 0.22); color: #A8D4BC; }
+    .logout-btn { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 12px; border-radius: var(--radius-sm); border: none; background: rgba(201,168,76,0.1); color: var(--gold-light); font-size: 13.5px; cursor: pointer; }
 
-                            <div class="mb-3">
-                                <label class="form-label">Nama Produk</label>
-                                <input type="text" name="nama_produk" value="{{ old('nama_produk', $product->nama_produk) }}" class="form-control @error('nama_produk') is-invalid @enderror">
-                                @error('nama_produk')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                            </div>
+    .main { margin-left: 260px; flex: 1; padding: 36px 40px; min-height: 100vh; }
+    .topbar { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; gap: 12px; }
+    .page-eyebrow { font-size: 11px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sage-deep); margin-bottom: 6px; }
+    .page-title { font-family: 'Playfair Display', Georgia, serif; font-size: 30px; font-weight: 600; color: var(--ink); }
+    .btn-back, .btn-save { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 18px; border-radius: var(--radius-sm); text-decoration: none; font-size: 13px; font-weight: 600; border: none; }
+    .btn-back { background: #fff; color: var(--ink); border: 1px solid var(--border); }
+    .btn-save { background: var(--gold); color: #fff; box-shadow: 0 2px 10px rgba(201,168,76,0.3); }
 
-                            <div class="mb-3">
-                                <label class="form-label">Deskripsi</label>
-                                <textarea name="deskripsi" class="form-control @error('deskripsi') is-invalid @enderror" rows="4">{{ old('deskripsi', $product->deskripsi) }}</textarea>
-                                @error('deskripsi')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                            </div>
+    .form-card { background: var(--surface); border-radius: var(--radius-lg); border: 1px solid var(--border); overflow: hidden; }
+    .form-card-head { padding: 22px 28px; border-bottom: 1px solid var(--border); }
+    .form-card-body { padding: 24px 28px 28px; }
+    .form-label { font-weight: 700; color: var(--ink-mid); margin-bottom: 8px; }
+    .form-control, .form-select { border-radius: 12px; border-color: var(--border-strong); padding: 12px 14px; }
+    .form-control:focus, .form-select:focus { border-color: var(--sage); box-shadow: none; }
+    .preview-image { width: 120px; height: 120px; object-fit: cover; border-radius: 12px; border: 1px solid var(--border); }
 
-                            <div class="row g-3">
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">Harga</label>
-                                    <input type="number" name="harga" value="{{ old('harga', $product->harga) }}" class="form-control @error('harga') is-invalid @enderror">
-                                    @error('harga')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">Stok</label>
-                                    <input type="number" name="stok" value="{{ old('stok', $product->stok) }}" class="form-control @error('stok') is-invalid @enderror">
-                                    @error('stok')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                                </div>
-                            </div>
+    @media (max-width: 900px) { .sidebar { width: 220px; } .main { margin-left: 220px; padding: 24px 22px; } }
+    @media (max-width: 680px) { .sidebar { display: none; } .main { margin-left: 0; padding: 20px 16px; } .topbar { flex-direction: column; } .page-title { font-size: 24px; } .form-card-head, .form-card-body { padding: 18px; } }
 
-                            <div class="mb-4">
-                                <label class="form-label">Gambar Produk</label>
-                                <input type="file" name="gambar" accept="image/*" class="form-control @error('gambar') is-invalid @enderror">
-                                <small class="text-muted d-block mb-2">Format: JPG, PNG, GIF, WEBP. Maksimal 3MB.</small>
-                                @if ($product->gambar)
-                                    <img src="{{ asset('storage/' . $product->gambar) }}" alt="Gambar Produk" class="rounded-3 border" style="width: 120px; height: 120px; object-fit: cover;">
-                                @endif
-                                @error('gambar')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                            </div>
+    .form-hint { font-size: 12.5px; color: var(--muted); margin-top: 6px; line-height: 1.45; }
+    .alert-umkm { border-radius: 12px; padding: 14px 16px; font-size: 13.5px; margin-bottom: 18px; border: 1px solid rgba(201, 168, 76, 0.45); background: #fdf6e3; color: #5c4a12; }
+    .alert-umkm a { color: var(--sage-deep); font-weight: 700; }
+</style>
+@endverbatim
 
-                            <button type="submit" class="btn btn-success px-4" style="background: #6aa34d; border-color: #5f993f;">Perbarui Produk</button>
-                        </form>
+<div class="layout">
+    <aside class="sidebar">
+        <div class="sidebar-brand"><div class="sidebar-logo-wrap"><img src="{{ asset('images/logo.png') }}" alt="Logo"></div><div><div class="sidebar-brand-name">UMKM Panel</div><div class="sidebar-brand-role">Administrator</div></div></div>
+        <nav class="sidebar-nav">
+            <a href="{{ route('admin.dashboard') }}" class="nav-item"><span class="nav-icon">⌂</span>Dashboard</a>
+            <div class="nav-section-label">Manajemen</div>
+            <a href="{{ route('members.index') }}" class="nav-item"><span class="nav-icon">☰</span>Anggota UMKM</a>
+            <a href="{{ route('keuangans.index') }}" class="nav-item"><span class="nav-icon">◈</span>Keuangan</a>
+            <a href="{{ route('products.index') }}" class="nav-item active"><span class="nav-icon">◫</span>Produk UMKM</a>
+            <a href="{{ route('orders.index') }}" class="nav-item"><span class="nav-icon">◷</span>Transaksi</a>
+        </nav>
+        <div class="sidebar-footer">
+            <a href="{{ route('admin.profile') }}" class="profile-link"><span style="font-size:15px;">◐</span>Profil Admin</a>
+            <form method="POST" action="{{ route('logout') }}" style="margin:0">@csrf<button type="submit" class="logout-btn"><span style="font-size:15px;">↩</span>Keluar</button></form>
+        </div>
+    </aside>
+
+    <main class="main">
+        <div class="topbar">
+            <div><div class="page-eyebrow">Produk UMKM</div><h1 class="page-title">Edit Produk</h1></div>
+            <a href="{{ route('products.index') }}" class="btn-back">Kembali</a>
+        </div>
+
+        <div class="form-card">
+            <div class="form-card-head">
+                <div style="font-size:15px;font-weight:700;color:var(--ink);">Perbarui Data Produk</div>
+                <div style="font-size:12.5px;color:var(--muted);margin-top:4px;">Ubah detail produk sesuai kondisi terbaru.</div>
+            </div>
+            <div class="form-card-body">
+                <form action="{{ route('products.update', $product) }}" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    @method('PUT')
+
+                    <div class="mb-3">
+                        <label class="form-label" for="nama_produk">Nama produk</label>
+                        <input type="text" id="nama_produk" name="nama_produk" value="{{ old('nama_produk', $product->nama_produk) }}" class="form-control @error('nama_produk') is-invalid @enderror" maxlength="255" required placeholder="Contoh: Wedang Jahe instan 200 g">
+                        <p class="form-hint mb-0">Nama produk untuk ditampilkan kepada pembeli.</p>
+                        @error('nama_produk')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                     </div>
-                </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Deskripsi</label>
+                        <textarea name="deskripsi" class="form-control @error('deskripsi') is-invalid @enderror" rows="4">{{ old('deskripsi', $product->deskripsi) }}</textarea>
+                        @error('deskripsi')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Harga</label>
+                            <input type="number" name="harga" value="{{ old('harga', $product->harga) }}" class="form-control @error('harga') is-invalid @enderror">
+                            @error('harga')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Stok</label>
+                            <input type="number" name="stok" value="{{ old('stok', $product->stok) }}" class="form-control @error('stok') is-invalid @enderror">
+                            @error('stok')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label">Gambar Produk</label>
+                        <input type="file" name="gambar" accept="image/*" class="form-control @error('gambar') is-invalid @enderror">
+                        <small class="text-muted d-block mb-2">Format: JPG, PNG, GIF, WEBP. Maksimal 3MB.</small>
+                        @if ($product->gambar)
+                            <img src="{{ asset('storage/' . $product->gambar) }}" alt="Gambar Produk" class="preview-image">
+                        @endif
+                        @error('gambar')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
+
+                    <button type="submit" class="btn-save">Perbarui Produk</button>
+                </form>
             </div>
         </div>
-    </div>
+    </main>
 </div>
 @endsection

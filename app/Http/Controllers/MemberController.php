@@ -27,8 +27,13 @@ class MemberController extends Controller
      */
     public function create()
     {
-        $umkms = Umkm::all();
-        return view('members.create', compact('umkms'));
+        // Mode singleton: pastikan profil UMKM sudah ada
+        if (!Umkm::exists()) {
+            return redirect()->route('umkms.index')
+                ->with('error', 'Lengkapi profil UMKM dulu sebelum menambah anggota.');
+        }
+
+        return view('members.create');
     }
 
     /**
@@ -37,12 +42,19 @@ class MemberController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'umkm_id' => 'required|exists:umkms,id',
             'nama_karyawan' => 'required|string',
             'alamat_karyawan' => 'required|string',
             'telepon_karyawan' => 'required|string',
             'jabatan' => 'required|string',
         ]);
+
+        $umkm = Umkm::first();
+        if (!$umkm) {
+            return redirect()->route('umkms.index')
+                ->with('error', 'Profil UMKM belum ada.');
+        }
+
+        $validated['umkm_id'] = $umkm->id;
 
         Member::create($validated);
 
@@ -50,20 +62,11 @@ class MemberController extends Controller
     }
 
     /**
-     * Display the specified resource.
-     */
-    public function show(Member $member)
-    {
-        return view('members.show', compact('member'));
-    }
-
-    /**
      * Show the form for editing the specified resource.
      */
     public function edit(Member $member)
     {
-        $umkms = Umkm::all();
-        return view('members.edit', compact('member', 'umkms'));
+        return view('members.edit', compact('member'));
     }
 
     /**
@@ -72,7 +75,6 @@ class MemberController extends Controller
     public function update(Request $request, Member $member)
     {
         $validated = $request->validate([
-            'umkm_id' => 'required|exists:umkms,id',
             'nama_karyawan' => 'required|string',
             'alamat_karyawan' => 'required|string',
             'telepon_karyawan' => 'required|string',

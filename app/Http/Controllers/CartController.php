@@ -15,6 +15,9 @@ class CartController extends Controller
      */
     public function index()
     {
+        // Reset pilihan checkout sebelumnya kalau user balik ke keranjang
+        session()->forget('checkout_item_ids');
+
         $cart = $this->resolveUserCart(Auth::user());
         $cartItems = $cart->cartItems()->with('product')->get();
 
@@ -24,7 +27,7 @@ class CartController extends Controller
             ->limit(3)
             ->get();
 
-        $wedjangkuProduct = Product::where('nama_produk', 'like', '%wedjangku%')
+        $wedjangkuProduct = Product::where('nama_produk', 'like', '%wedjangku%', 'and')
             ->orderByDesc('stok')
             ->orderBy('nama_produk')
             ->first();
@@ -50,24 +53,137 @@ class CartController extends Controller
             'qty' => 'required|integer|min:1',
         ]);
 
+        $product = Product::findOrFail($request->product_id);
+
+        if ($product->stok <= 0) {
+            return redirect()->back()->with('error', 'Maaf, produk ' . $product->nama_produk . ' sudah habis.');
+        }
+
         $user = Auth::user();
         $cart = $this->resolveUserCart($user);
 
-        $cartItem = CartItem::where('cart_id', $cart->id)
-                            ->where('product_id', $request->product_id)
+        $cartItem = CartItem::where('cart_id', '=', $cart->id, 'and')
+                    ->where('product_id', '=', $request->product_id, 'and')
                             ->first();
 
+        $existingQty = $cartItem ? $cartItem->qty : 0;
+        $newTotalQty = $existingQty + $request->qty;
+
+        if ($newTotalQty > $product->stok) {
+            return redirect()->back()->with('error', 'Stok ' . $product->nama_produk . ' tinggal ' . $product->stok . '. Tidak bisa menambah lebih banyak.');
+        }
+
         if ($cartItem) {
-            $cartItem->update(['qty' => $cartItem->qty + $request->qty]);
+            $cartItem->update(['qty' => $newTotalQty]);
         } else {
-            CartItem::create([
+            $cartItem = CartItem::create([
                 'cart_id' => $cart->id,
                 'product_id' => $request->product_id,
                 'qty' => $request->qty,
             ]);
         }
 
+        if ($request->input('redirect_to') === 'checkout') {
+            // Pilih hanya produk ini untuk checkout (Beli Sekarang)
+            session(['checkout_item_ids' => [$cartItem->id]]);
+            return redirect()->route('payments.create')->with('success', 'Lanjutkan pembayaran untuk produk ini');
+        }
+
         return redirect()->route('carts.index')->with('success', 'Produk ditambahkan ke keranjang');
+    }
+
+    /**
+     * Simpan pilihan item yang akan di-checkout ke session lalu lanjut ke halaman pembayaran.
+     */
+    public function checkout(Request $request)
+    {
+        $data = $request->validate([
+            'cart_item_ids'   => 'required|array|min:1',
+            'cart_item_ids.*' => 'integer',
+        ], [
+            'cart_item_ids.required' => 'Pilih minimal satu produk untuk di-checkout.',
+        ]);
+
+        $user = Auth::user();
+        $cart = $this->resolveUserCart($user);
+
+        // Validasi: semua id harus milik cart user dan produknya masih ada stoknya
+        $validIds = CartItem::where('cart_id', '=', $cart->id, 'and')
+            ->whereIn('id', $data['cart_item_ids'])
+            ->with('product')
+            ->get()
+            ->filter(fn($i) => $i->product && $i->product->stok > 0)
+            ->pluck('id')
+            ->all();
+
+        if (empty($validIds)) {
+            return redirect()->route('carts.index')->with('error', 'Tidak ada produk valid yang bisa di-checkout.');
+        }
+
+        session(['checkout_item_ids' => $validIds]);
+
+        return redirect()->route('payments.create');
+    }
+
+    /**
+     * Decrease product quantity in cart or remove it when quantity reaches zero.
+     */
+    public function decrement(Request $request)
+    {
+        $request->validate([
+            'product_id' => 'required|exists:products,id',
+            'qty' => 'required|integer|min:1',
+        ]);
+
+        $user = Auth::user();
+        $cart = $this->resolveUserCart($user);
+
+        $cartItem = CartItem::where('cart_id', '=', $cart->id, 'and')
+            ->where('product_id', '=', $request->product_id, 'and')
+            ->first();
+
+        if (! $cartItem) {
+            return redirect()->route('carts.index')->with('success', 'Produk tidak ditemukan di keranjang');
+        }
+
+        if ($cartItem->qty <= 1) {
+            return redirect()->route('carts.index')->with('success', 'Jumlah minimum 1, gunakan tombol hapus untuk menghapus produk');
+        }
+
+        $newQty = $cartItem->qty - $request->qty;
+
+        if ($newQty < 1) {
+            $newQty = 1;
+        }
+
+        $cartItem->update(['qty' => $newQty]);
+
+        return redirect()->route('carts.index')->with('success', 'Jumlah produk dikurangi');
+    }
+
+    /**
+     * Remove product from cart regardless of quantity.
+     */
+    public function remove(Request $request)
+    {
+        $request->validate([
+            'product_id' => 'required|exists:products,id',
+        ]);
+
+        $user = Auth::user();
+        $cart = $this->resolveUserCart($user);
+
+        $cartItem = CartItem::where('cart_id', '=', $cart->id, 'and')
+            ->where('product_id', '=', $request->product_id, 'and')
+            ->first();
+
+        if (! $cartItem) {
+            return redirect()->route('carts.index')->with('success', 'Produk tidak ditemukan di keranjang');
+        }
+
+        $cartItem->delete();
+
+        return redirect()->route('carts.index')->with('success', 'Produk dihapus dari keranjang');
     }
 
     /**
@@ -75,7 +191,7 @@ class CartController extends Controller
      */
     private function resolveUserCart($user): Cart
     {
-        $carts = Cart::where('user_id', $user->id)
+        $carts = Cart::where('user_id', '=', $user->id, 'and')
             ->withCount('cartItems')
             ->orderByDesc('cart_items_count')
             ->orderByDesc('updated_at')
@@ -90,8 +206,8 @@ class CartController extends Controller
 
         foreach ($duplicateCarts as $duplicateCart) {
             foreach ($duplicateCart->cartItems as $dupItem) {
-                $existingItem = CartItem::where('cart_id', $mainCart->id)
-                    ->where('product_id', $dupItem->product_id)
+                $existingItem = CartItem::where('cart_id', '=', $mainCart->id, 'and')
+                    ->where('product_id', '=', $dupItem->product_id, 'and')
                     ->first();
 
                 if ($existingItem) {

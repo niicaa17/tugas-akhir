@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Category;
 use App\Models\Product;
 use App\Models\Umkm;
 use Illuminate\Http\Request;
@@ -15,7 +14,7 @@ class ProductController extends Controller
      */
     public function index()
     {
-        $products = Product::with(['umkm', 'category'])->paginate(10);
+        $products = Product::with('umkm')->paginate(10);
         return view('products.index', compact('products'));
     }
 
@@ -24,8 +23,7 @@ class ProductController extends Controller
      */
     public function create()
     {
-        $umkms = Umkm::orderBy('nama_umkm')->get();
-        return view('products.create', compact('umkms'));
+        return view('products.create');
     }
 
     /**
@@ -34,7 +32,6 @@ class ProductController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'umkm_id' => 'required|exists:umkms,id',
             'nama_produk' => 'required|string|max:255',
             'deskripsi' => 'nullable|string',
             'harga' => 'required|integer|min:0',
@@ -42,7 +39,13 @@ class ProductController extends Controller
             'gambar' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:3072',
         ]);
 
-        $data['category_id'] = 1;
+        // Assign to first UMKM if exists
+        $umkm = Umkm::first();
+        if (!$umkm) {
+            return redirect()->back()->withErrors(['Belum ada UMKM. Lengkapi profil UMKM terlebih dahulu.']);
+        }
+
+        $data['umkm_id'] = $umkm->id;
 
         if ($request->hasFile('gambar')) {
             $data['gambar'] = $request->file('gambar')->store('products', 'public');
@@ -66,8 +69,7 @@ class ProductController extends Controller
      */
     public function edit(Product $product)
     {
-        $umkms = Umkm::orderBy('nama_umkm')->get();
-        return view('products.edit', compact('product', 'umkms'));
+        return view('products.edit', compact('product'));
     }
 
     /**
@@ -76,7 +78,6 @@ class ProductController extends Controller
     public function update(Request $request, Product $product)
     {
         $data = $request->validate([
-            'umkm_id' => 'required|exists:umkms,id',
             'nama_produk' => 'required|string|max:255',
             'deskripsi' => 'nullable|string',
             'harga' => 'required|integer|min:0',
@@ -105,7 +106,7 @@ class ProductController extends Controller
             Storage::disk('public')->delete($product->gambar);
         }
 
-        $product->delete();
+        Product::destroy($product->id);
         return redirect()->route('products.index')->with('success', 'Produk berhasil dihapus');
     }
 }

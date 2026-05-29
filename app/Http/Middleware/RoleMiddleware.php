@@ -17,8 +17,14 @@ class RoleMiddleware
             return redirect()->route('login');
         }
 
-        if ($request->user()->role !== $role) {
-            abort(403, 'Akses ditolak.');
+        $user = $request->user();
+
+        if ($user->role !== $role) {
+            if ($user->isAdmin()) {
+                return redirect()->route('admin.dashboard');
+            }
+
+            return redirect()->route('user.dashboard');
         }
 
         return $next($request);

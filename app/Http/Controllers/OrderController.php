@@ -2,13 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Category;
 use App\Models\CartItem;
 use App\Models\Order;
 use App\Models\OrderDetail;
+use App\Models\Keuangan;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class OrderController extends Controller
 {
@@ -25,7 +26,7 @@ class OrderController extends Controller
             'selesai' => ['selesai'],
         ];
 
-        $orderQuery = Order::with('orderDetails.product')->latest();
+        $orderQuery = Order::with(['orderDetails.product', 'user', 'payments'])->latest();
 
         if (! Auth::user()->isAdmin()) {
             $orderQuery->where('user_id', Auth::id());
@@ -43,9 +44,7 @@ class OrderController extends Controller
             ->limit(3)
             ->get();
 
-        $categories = Category::orderBy('nama_kategori')->limit(3)->get();
-
-        return view('orders.index', compact('orders', 'statusTab', 'topProducts', 'categories'));
+        return view('orders.index', compact('orders', 'statusTab', 'topProducts'));
     }
 
     /**
@@ -86,10 +85,8 @@ class OrderController extends Controller
             ]);
 
             // Kurangi stok produk
-            $item->product->decrement('stok', $item->qty);
+            $item->product->decrement('stok', $item->qty, []);
         }
-
-        $cart->cartItems()->delete();
 
         // Catat pemasukan ke keuangan untuk setiap produk
         $productTotals = [];
@@ -115,7 +112,8 @@ class OrderController extends Controller
             ]);
         }
 
-        return redirect()->route('orders.show', $order)->with('success', 'Pesanan berhasil dibuat');
+        return redirect()->route('payments.create', ['order' => $order->id])
+            ->with('success', 'Pesanan dibuat. Lengkapi checkout lalu klik Buat Pesanan.');
     }
 
     /**
@@ -127,7 +125,7 @@ class OrderController extends Controller
             abort(403);
         }
 
-        $order->load('orderDetails.product');
+        $order->load('orderDetails.product', 'payments', 'user');
 
         return view('orders.show', compact('order'));
     }
@@ -145,7 +143,76 @@ class OrderController extends Controller
      */
     public function update(Request $request, Order $order)
     {
-        //
+        if (! Auth::user()->isAdmin()) {
+            abort(403);
+        }
+
+        $data = $request->validate([
+            'status' => 'required|in:pending,dikirim,selesai,dibatalkan',
+        ]);
+
+        // Aturan: status hanya boleh "selesai" jika order sudah pernah dikirim
+        // (atau memang sudah selesai). Ini menjaga urutan flow:
+        //   pending/dibayar -> dikirim -> selesai
+        if ($data['status'] === 'selesai'
+            && ! in_array($order->status, ['dikirim', 'selesai'], true)) {
+            return back()->withErrors([
+                'status' => 'Pesanan harus berstatus "Dikirim" dulu sebelum bisa ditandai "Selesai".',
+            ]);
+        }
+
+        $order->update([
+            'status' => $data['status'],
+        ]);
+
+        // Sinkronkan status pembayaran:
+        // - Jika order selesai, payment juga jadi selesai (untuk COD ini berarti uang sudah diterima).
+        // - Jika order dibatalkan, payment ikut dibatalkan.
+        if ($data['status'] === 'selesai') {
+            $payment = $order->payments()->first();
+            if ($payment) {
+                $payment->update(['status' => 'selesai']);
+            }
+        } elseif ($data['status'] === 'dibatalkan') {
+            $payment = $order->payments()->first();
+            if ($payment) {
+                $payment->update(['status' => 'dibatalkan']);
+            }
+        }
+
+        return redirect()
+            ->route('orders.show', $order)
+            ->with('success', 'Status transaksi berhasil diperbarui.');
+    }
+
+    /**
+     * User mengkonfirmasi bahwa pesanannya sudah diterima.
+     * Status order otomatis jadi "selesai" dan pembayaran (termasuk COD)
+     * ditandai selesai juga.
+     */
+    public function confirm(Request $request, Order $order)
+    {
+        // Hanya pemilik order yang boleh konfirmasi penerimaan
+        if ($order->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        if ($order->status !== 'dikirim') {
+            return back()->with('error', 'Pesanan ini belum berstatus "Dikirim", jadi belum bisa dikonfirmasi diterima.');
+        }
+
+        DB::transaction(function () use ($order) {
+            $order->update(['status' => 'selesai']);
+
+            $payment = $order->payments()->first();
+            if ($payment) {
+                $payment->update(['status' => 'selesai']);
+            }
+        });
+
+        return redirect()
+            ->route('orders.show', $order)
+            ->with('success', 'Terima kasih! Pesanan ditandai selesai.');
     }
 
     /**
@@ -153,6 +220,26 @@ class OrderController extends Controller
      */
     public function destroy(Order $order)
     {
-        //
+        if (! Auth::user()->isAdmin()) {
+            abort(403);
+        }
+
+        DB::transaction(function () use ($order) {
+            $order->load('orderDetails.product');
+
+            foreach ($order->orderDetails as $detail) {
+                if ($detail->product) {
+                    $detail->product->increment('stok', $detail->qty);
+                }
+            }
+
+            Keuangan::where('keterangan', 'Penjualan dari Order #' . $order->id)->delete();
+
+            $order->delete();
+        });
+
+        return redirect()
+            ->route('orders.index')
+            ->with('success', 'Transaksi berhasil dihapus.');
     }
 }

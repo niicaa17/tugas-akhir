@@ -11,10 +11,22 @@ class KeuanganController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $keuangans = Keuangan::with(['product.umkm'])->paginate(10);
-        return view('keuangans.index', compact('keuangans'));
+        $month = $request->query('month');
+        $year = $request->query('year', now()->year);
+        
+        $query = Keuangan::with(['product.umkm']);
+        
+        // Filter by month if provided
+        if ($month && is_numeric($month) && $month >= 1 && $month <= 12) {
+            $query->whereYear('tanggal', $year)
+                  ->whereMonth('tanggal', $month);
+        }
+        
+        $keuangans = $query->paginate(10);
+        
+        return view('keuangans.index', compact('keuangans', 'month', 'year'));
     }
 
     /**
@@ -92,5 +104,30 @@ class KeuanganController extends Controller
     {
         $keuangan->delete();
         return redirect()->route('keuangans.index')->with('success', 'Data keuangan berhasil dihapus');
+    }
+
+    /**
+     * Print (cetak) laporan keuangan.
+     */
+    public function print(Request $request)
+    {
+        $month = $request->query('month');
+        $year = $request->query('year', now()->year);
+        
+        $query = Keuangan::with(['product.umkm']);
+        
+        // Filter by month if provided
+        if ($month && is_numeric($month) && $month >= 1 && $month <= 12) {
+            $query->whereYear('tanggal', $year)
+                  ->whereMonth('tanggal', $month);
+        }
+        
+        $keuangans = $query->orderBy('tanggal', 'desc')->get();
+
+        $totalPemasukan = $keuangans->where('jenis', 'pemasukan')->sum('jumlah');
+        $totalPengeluaran = $keuangans->where('jenis', 'pengeluaran')->sum('jumlah');
+        $saldo = $totalPemasukan - $totalPengeluaran;
+
+        return view('keuangans.print', compact('keuangans', 'totalPemasukan', 'totalPengeluaran', 'saldo', 'month', 'year'));
     }
 }
