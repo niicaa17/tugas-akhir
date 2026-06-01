@@ -413,6 +413,94 @@
             margin: 0;
         }
 
+        /* ───── ABOUT ───── */
+        .about {
+            max-width: 1100px;
+            margin: 80px auto 0;
+            padding: 0 28px;
+        }
+        .about-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 28px 30px;
+            margin-bottom: 16px;
+            box-shadow: var(--shadow-sm);
+        }
+        .about-card-head {
+            display: flex; align-items: center; gap: 12px;
+            margin-bottom: 14px;
+        }
+        .about-card-icon {
+            width: 40px; height: 40px;
+            border-radius: 10px;
+            background: var(--sage-pale);
+            color: var(--sage-deep);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+        .about-card-icon.gold { background: var(--gold-pale); color: #8B6914; }
+        .about-card-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 19px;
+            font-weight: 600;
+            color: var(--ink);
+            margin: 0;
+            letter-spacing: -0.005em;
+        }
+        .about-card-text {
+            font-size: 14.5px;
+            line-height: 1.75;
+            color: var(--ink-soft);
+            margin: 0;
+        }
+        .timeline-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-top: 6px;
+        }
+        .timeline-item {
+            background: var(--cream);
+            border-radius: 10px;
+            padding: 14px 16px;
+            border: 1px solid var(--border);
+        }
+        .timeline-year {
+            display: inline-block;
+            background: var(--sage-deep);
+            color: #fff;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 999px;
+            margin-bottom: 9px;
+            font-family: 'DM Sans', sans-serif;
+            letter-spacing: 0.04em;
+        }
+        .timeline-text {
+            font-size: 12.5px;
+            color: var(--ink-soft);
+            line-height: 1.6;
+            margin: 0;
+        }
+        .vm-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        .vm-grid .about-card { margin-bottom: 0; }
+        .mission-list {
+            padding-left: 18px;
+            font-size: 14.5px;
+            color: var(--ink-soft);
+            line-height: 1.7;
+            margin: 0;
+        }
+        .mission-list li { margin-bottom: 8px; }
+        .mission-list li:last-child { margin-bottom: 0; }
+
         /* ───── CTA STRIP ───── */
         .cta-strip {
             max-width: 1100px;
@@ -515,16 +603,20 @@
             .steps { grid-template-columns: repeat(2, 1fr); }
             .nav-links { display: none; }
             .cta-card { padding: 32px 28px; }
+            .timeline-grid { grid-template-columns: repeat(2, 1fr); }
+            .vm-grid { grid-template-columns: 1fr; }
         }
         @media (max-width: 520px) {
             .nav-inner { padding: 12px 18px; }
             .hero { padding: 28px 18px 8px; }
-            .features, .how, .cta-strip { padding-left: 18px; padding-right: 18px; }
+            .features, .how, .cta-strip, .about { padding-left: 18px; padding-right: 18px; }
             footer.foot { padding-left: 18px; padding-right: 18px; }
             .steps { grid-template-columns: 1fr; }
             .cta-card { flex-direction: column; align-items: flex-start; }
             .hero-trust { gap: 18px; }
             .brand-sub { display: none; }
+            .timeline-grid { grid-template-columns: 1fr; }
+            .about-card { padding: 22px 20px; }
         }
     </style>
 </head>
@@ -693,8 +785,88 @@
         </div>
     </section>
 
+    {{-- ───── ABOUT ───── --}}
+    <section class="about" id="tentang">
+        <div class="section-head">
+            <span class="eyebrow"><span class="dot"></span> Kenali Kami</span>
+            <h2 class="section-title">Tentang Rumah Rimpang</h2>
+            <p class="section-sub">Produsen minuman herbal berbahan rimpang dari Desa Suka Maju, Mestong, Jambi.</p>
+        </div>
+
+        <div class="about-card">
+            <div class="about-card-head">
+                <div class="about-card-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 2C8 6 6 10 6 14a6 6 0 0012 0c0-4-2-8-6-12z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+                </div>
+                <h3 class="about-card-title">Tentang Kami</h3>
+            </div>
+            <p class="about-card-text">
+                Rumah Rimpang merupakan usaha berbasis kelompok tani dari Desa Suka Maju, Mestong,
+                yang berfokus pada pengolahan minuman herbal berbahan dasar rimpang seperti jahe dan kunyit.
+                Usaha ini lahir dari semangat kebersamaan untuk mengembangkan potensi hasil pertanian
+                menjadi produk bernilai tambah bagi masyarakat lokal.
+            </p>
+        </div>
+
+        <div class="about-card">
+            <div class="about-card-head">
+                <div class="about-card-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 5a2 2 0 012-2h12a2 2 0 012 2v15l-4-2-4 2-4-2-4 2V5z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+                </div>
+                <h3 class="about-card-title">Sejarah Singkat</h3>
+            </div>
+            <div class="timeline-grid">
+                <div class="timeline-item">
+                    <span class="timeline-year">2020</span>
+                    <p class="timeline-text">Kelompok tani didirikan untuk mengembangkan usaha bersama, awalnya berfokus pada kegiatan budidaya dan membangun kebersamaan.</p>
+                </div>
+                <div class="timeline-item">
+                    <span class="timeline-year">2022</span>
+                    <p class="timeline-text">Mulai berinovasi mengolah hasil panen menjadi produk wedang jahe serbuk dan kunyit asam cair yang bernilai jual tinggi.</p>
+                </div>
+                <div class="timeline-item">
+                    <span class="timeline-year">2023</span>
+                    <p class="timeline-text">Fasilitas bottling modern beroperasi. Merek Rumah Rimpang lahir dari ibu-ibu kelompok tani yang memimpin pengolahan produk.</p>
+                </div>
+                <div class="timeline-item">
+                    <span class="timeline-year">2024</span>
+                    <p class="timeline-text">Kelompok resmi mendapat legalitas melalui akta notaris, memperkuat fondasi pengembangan usaha secara profesional.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="vm-grid">
+            <div class="about-card">
+                <div class="about-card-head">
+                    <div class="about-card-icon gold">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7l3-7z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+                    </div>
+                    <h3 class="about-card-title">Visi</h3>
+                </div>
+                <p class="about-card-text">
+                    Menjadi produsen minuman herbal berbahan dasar jahe dan kunyit yang terkemuka dan
+                    terpercaya, dengan jaminan keamanan produk serta menghadirkan cita rasa otentik
+                    dan inovatif.
+                </p>
+            </div>
+            <div class="about-card">
+                <div class="about-card-head">
+                    <div class="about-card-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 2v20M2 12h20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                    </div>
+                    <h3 class="about-card-title">Misi</h3>
+                </div>
+                <ol class="mission-list">
+                    <li>Menghasilkan produk minuman herbal berkualitas tinggi, aman, dan berbahan alami.</li>
+                    <li>Mengembangkan inovasi varian rasa sesuai tren dan kebutuhan pasar.</li>
+                    <li>Memperluas jangkauan pasar agar produk lebih dikenal masyarakat luas.</li>
+                </ol>
+            </div>
+        </div>
+    </section>
+
     {{-- ───── CTA ───── --}}
-    <section class="cta-strip" id="tentang">
+    <section class="cta-strip">
         <div class="cta-card">
             <div class="cta-text">
                 <div class="cta-eyebrow">Siap mencoba?</div>
@@ -706,13 +878,6 @@
             <div class="cta-actions">
                 @auth
                     <a href="{{ route('user.dashboard') }}" class="btn btn-gold btn-lg">Mulai Belanja Sekarang</a>
-                @else
-                    @if (Route::has('register'))
-                        <a href="{{ route('register') }}" class="btn btn-gold btn-lg">Daftar Gratis</a>
-                    @endif
-                    @if (Route::has('login'))
-                        <a href="{{ route('login') }}" class="btn btn-ghost btn-lg" style="background:rgba(255,255,255,0.08);color:#fff;border-color:rgba(255,255,255,0.18);">Masuk</a>
-                    @endif
                 @endauth
             </div>
         </div>
