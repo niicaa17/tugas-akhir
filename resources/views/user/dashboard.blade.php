@@ -590,7 +590,8 @@
 
             <div class="udp-nav-links">
                 <button class="udp-nav-link active" id="nl-home" onclick="udpShow('home')">Home</button>
-                <button class="udp-nav-link" id="nl-shop" onclick="udpShow('home'); setTimeout(()=>document.getElementById('udp-produk')?.scrollIntoView({behavior:'smooth'}),80)">Shop</button>
+                <a href="{{ route('user.shop') }}" class="udp-nav-link" id="nl-shop">Shop</a>
+                <a href="{{ route('user.favorites') }}" class="udp-nav-link" id="nl-fav">Favorit</a>
                 <button class="udp-nav-link" id="nl-about" onclick="udpShow('about')">About Us</button>
                 <a href="{{ route('user.profile') }}" class="udp-nav-link">Profil</a>
             </div>
@@ -616,7 +617,7 @@
                 <div class="udp-hero-eyebrow">Produk Herbal Pilihan</div>
                 <h1 class="udp-hero-title">Selamat Datang di<br><span>Rumah Rimpang</span> 🌿</h1>
                 <p class="udp-hero-sub">Minuman herbal segar dari rimpang pilihan, langsung dari kebun ke tanganmu.</p>
-                <a href="#" class="udp-hero-cta" onclick="document.getElementById('udp-produk')?.scrollIntoView({behavior:'smooth'});return false;">
+                <a href="{{ route('user.shop') }}" class="udp-hero-cta">
                     Belanja Sekarang →
                 </a>
             </div>
@@ -639,11 +640,11 @@
                 <div><div class="udp-quick-label">Pesanan Saya</div><div class="udp-quick-sub">Lacak status pembelian</div></div>
                 <span class="udp-quick-arrow">→</span>
             </a>
-            <div class="udp-quick-card qpink" style="cursor:default">
+            <a href="{{ route('user.favorites') }}" class="udp-quick-card qpink">
                 <div class="udp-quick-icon qicon-pink">💗</div>
                 <div><div class="udp-quick-label">Favorit</div><div class="udp-quick-sub">Produk yang kamu sukai</div></div>
                 <span class="udp-quick-arrow">→</span>
-            </div>
+            </a>
         </div>
 
         {{-- Products --}}

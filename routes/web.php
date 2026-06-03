@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AdminProfileController;
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\KeuanganController;
 use App\Http\Controllers\MemberController;
@@ -49,6 +50,9 @@ Route::middleware('auth')->group(function () {
 
 Route::middleware(['auth', 'role:user'])->group(function () {
     Route::get('/user/dashboard', [UserDashboardController::class, 'index'])->name('user.dashboard');
+    Route::get('/user/shop', [UserDashboardController::class, 'shop'])->name('user.shop');
+    Route::get('/user/favorites', [FavoriteController::class, 'index'])->name('user.favorites');
+    Route::post('/user/favorites/toggle', [FavoriteController::class, 'toggle'])->name('user.favorites.toggle');
     Route::get('/user/profile', [UserDashboardController::class, 'profile'])->name('user.profile');
     Route::patch('/user/profile', [UserDashboardController::class, 'updateProfile'])->name('user.profile.update');
     Route::get('/user/products/{product}', [UserDashboardController::class, 'showProduct'])->name('user.products.show');

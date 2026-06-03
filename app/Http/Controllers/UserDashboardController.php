@@ -42,7 +42,48 @@ class UserDashboardController extends Controller
             ->limit(3)
             ->get();
 
-        return view('user.product-show', compact('product', 'otherProducts'));
+        $isFavorited = Auth::user()->favorites()
+            ->where('product_id', $product->id)
+            ->exists();
+
+        return view('user.product-show', compact('product', 'otherProducts', 'isFavorited'));
+    }
+
+    /**
+     * Display the full shop catalog with search & sorting.
+     */
+    public function shop(Request $request)
+    {
+        $search = trim((string) $request->input('q', ''));
+        $sort = $request->input('sort', 'terlaris');
+
+        $products = Product::with('umkm')
+            ->withSum('orderDetails as total_terjual', 'qty')
+            ->when($search !== '', function ($query) use ($search) {
+                $query->where('nama_produk', 'like', '%' . $search . '%');
+            });
+
+        switch ($sort) {
+            case 'termurah':
+                $products->orderBy('harga')->orderBy('nama_produk');
+                break;
+            case 'termahal':
+                $products->orderByDesc('harga')->orderBy('nama_produk');
+                break;
+            case 'nama':
+                $products->orderBy('nama_produk');
+                break;
+            default:
+                $sort = 'terlaris';
+                $products->orderByDesc('total_terjual')->orderBy('nama_produk');
+                break;
+        }
+
+        $products = $products->paginate(12)->withQueryString();
+
+        $favoriteIds = Auth::user()->favorites()->pluck('product_id')->all();
+
+        return view('user.shop', compact('products', 'search', 'sort', 'favoriteIds'));
     }
 
     /**

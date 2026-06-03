@@ -462,6 +462,27 @@
         transform: translateY(-2px);
     }
 
+    /* ── Favorite toggle ── */
+    .pdp-fav-btn {
+        display: inline-flex; align-items: center; justify-content: center; gap: 9px;
+        width: 100%;
+        height: 50px;
+        border: 1.5px solid var(--line-mid);
+        border-radius: 16px;
+        background: rgba(255,255,255,0.55);
+        color: var(--text-soft);
+        font-family: 'DM Sans', sans-serif;
+        font-size: 13.5px; font-weight: 600;
+        letter-spacing: 0.03em;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .pdp-fav-btn:hover { border-color: #d98ab0; color: #c45c8a; background: #fff; }
+    .pdp-fav-btn .pdp-heart { font-size: 18px; line-height: 1; color: #d98ab0; }
+    .pdp-fav-btn.is-fav { background: #fdeef5; border-color: #E07FA8; color: #c45c8a; }
+    .pdp-fav-btn.is-fav .pdp-heart { color: #E07FA8; }
+    .pdp-fav-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
     /* ── Description block ── */
     .pdp-desc-block {
         margin-top: 40px;
@@ -1137,6 +1158,34 @@
     function escHtml(s) {
         return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
+
+    /* ── Favorite toggle ── */
+    const PDP_FAV_URL = "{{ route('user.favorites.toggle') }}";
+    const PDP_CSRF = "{{ csrf_token() }}";
+
+    function pdpToggleFav(btn) {
+        const productId = btn.dataset.product;
+        btn.disabled = true;
+        fetch(PDP_FAV_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': PDP_CSRF,
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+            body: JSON.stringify({ product_id: productId }),
+        })
+        .then(r => r.json())
+        .then(data => {
+            btn.classList.toggle('is-fav', data.favorited);
+            btn.querySelector('.pdp-heart').textContent = data.favorited ? '♥' : '♡';
+            btn.querySelector('.pdp-fav-label').textContent = data.favorited ? 'Tersimpan di Favorit' : 'Tambah ke Favorit';
+            showToast(data.favorited ? '💗 ' + data.message : data.message);
+        })
+        .catch(() => showToast('Gagal memperbarui favorit'))
+        .finally(() => { btn.disabled = false; });
+    }
 </script>
 
 <div class="pdp-root">
@@ -1254,6 +1303,15 @@
                         </div>
                     </div>
                     @endif
+
+                    <button type="button"
+                            class="pdp-fav-btn {{ ($isFavorited ?? false) ? 'is-fav' : '' }}"
+                            id="pdpFavBtn"
+                            data-product="{{ $product->id }}"
+                            onclick="pdpToggleFav(this)">
+                        <span class="pdp-heart">{{ ($isFavorited ?? false) ? '♥' : '♡' }}</span>
+                        <span class="pdp-fav-label">{{ ($isFavorited ?? false) ? 'Tersimpan di Favorit' : 'Tambah ke Favorit' }}</span>
+                    </button>
                 </div>
             </div>
         </div>
