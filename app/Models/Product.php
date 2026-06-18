@@ -37,4 +37,9 @@ class Product extends Model
     {
         return $this->hasMany(OrderDetail::class);
     }
+
+    public function reviews()
+    {
+        return $this->hasMany(OrderDetail::class)->whereNotNull('reviewed_at');
+    }
 }

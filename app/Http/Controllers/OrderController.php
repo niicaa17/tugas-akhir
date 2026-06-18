@@ -125,7 +125,7 @@ class OrderController extends Controller
             abort(403);
         }
 
-        $order->load('orderDetails.product', 'payments', 'user');
+        $order->load('orderDetails.product.umkm', 'payments', 'user');
 
         return view('orders.show', compact('order'));
     }

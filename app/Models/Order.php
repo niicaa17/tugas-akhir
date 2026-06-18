@@ -15,12 +15,15 @@ class Order extends Model
         'kota',
         'kode_pos',
         'nomor_telepon',
+        'kurir',
+        'ongkir',
     ];
 
     protected function casts(): array
     {
         return [
             'total_harga' => 'integer',
+            'ongkir' => 'integer',
         ];
     }
 

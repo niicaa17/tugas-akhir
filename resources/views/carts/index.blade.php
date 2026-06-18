@@ -493,8 +493,11 @@
         font-size: 16px; color: var(--moss);
         letter-spacing: -.01em;
         font-weight: 500;
-        margin-bottom: 10px;
+        margin-bottom: 6px;
     }
+    .reco-rating { display: flex; align-items: center; gap: 5px; margin-bottom: 10px; }
+    .reco-stars { color: var(--gold); font-size: 13px; letter-spacing: 1px; line-height: 1; }
+    .reco-rating-val { font-size: 12px; font-weight: 600; color: var(--moss); }
     .reco-add-btn {
         width: 100%;
         font-family: 'DM Sans', sans-serif;
@@ -821,6 +824,10 @@
                         <div class="reco-body">
                             <div class="reco-name">{{ $product->nama_produk }}</div>
                             <div class="reco-price">Rp {{ number_format($product->harga, 0, ',', '.') }}</div>
+                            <div class="reco-rating">
+                                <span class="reco-stars">★★★★★</span>
+                                <span class="reco-rating-val">4.9</span>
+                            </div>
                             @if ($rHabis)
                                 <button type="button" class="reco-add-btn" disabled>Stok habis</button>
                             @else

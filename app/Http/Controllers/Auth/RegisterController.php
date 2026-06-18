@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Foundation\Auth\RegistersUsers;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 
@@ -64,10 +64,18 @@ class RegisterController extends Controller
     }
 
     /**
-     * Redirect users after registration based on role.
+     * Handle a registration request.
+     *
+     * Override the default trait behaviour so users are NOT auto-logged in
+     * after registering. Instead they are redirected to the login page.
      */
-    protected function redirectTo()
+    public function register(Request $request)
     {
-        return Auth::user()->isAdmin() ? route('admin.dashboard') : route('user.dashboard');
+        $this->validator($request->all())->validate();
+
+        event(new \Illuminate\Auth\Events\Registered($user = $this->create($request->all())));
+
+        return redirect()->route('login')
+            ->with('status', 'Pendaftaran berhasil. Silakan login dengan akun Anda.');
     }
 }

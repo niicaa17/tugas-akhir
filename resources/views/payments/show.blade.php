@@ -14,9 +14,6 @@
                     <p><strong>Metode:</strong> {{ $payment->metode }}</p>
                     <p><strong>Jumlah:</strong> Rp {{ number_format($payment->jumlah, 0, ',', '.') }}</p>
                     <p><strong>Status:</strong> {{ $payment->status }}</p>
-                    @if ($payment->bukti_bayar)
-                        <p><strong>Bukti Bayar:</strong> <img src="{{ asset('storage/' . $payment->bukti_bayar) }}" alt="Bukti Bayar" width="200"></p>
-                    @endif
                     <p><strong>Dibuat:</strong> {{ $payment->created_at->format('d M Y H:i') }}</p>
 
                     <a href="{{ route('orders.index') }}" class="btn btn-secondary">Kembali</a>

@@ -13,11 +13,31 @@ use Illuminate\Support\Facades\DB;
 class PaymentController extends Controller
 {
     /**
-     * Minimal jumlah pcs (qty total) di keranjang/order agar opsi
-     * Bayar di Tempat (COD) bisa dipakai. Untuk pesanan kecil, COD
-     * tidak ditawarkan.
+     * Minimal jumlah pcs (qty total) di keranjang/order agar pesanan
+     * mendapat gratis ongkir. Di bawah ini, ongkir dibebankan sesuai kurir.
      */
-    public const COD_MIN_QTY = 5;
+    public const FREE_SHIPPING_MIN_QTY = 5;
+
+    /**
+     * Daftar kurir yang tersedia beserta tarif ongkirnya (Rp).
+     */
+    public const COURIERS = [
+        'jnt'         => ['label' => 'J&T Express',  'ongkir' => 15000],
+        'jne_reguler' => ['label' => 'JNE Reguler',  'ongkir' => 18000],
+        'spx_standar' => ['label' => 'SPX Standar',  'ongkir' => 12000],
+    ];
+
+    /**
+     * Hitung ongkir berdasarkan kurir & total qty. Gratis jika qty >= minimal.
+     */
+    public static function hitungOngkir(string $kurir, int $totalQty): int
+    {
+        if ($totalQty >= self::FREE_SHIPPING_MIN_QTY) {
+            return 0;
+        }
+
+        return self::COURIERS[$kurir]['ongkir'] ?? 0;
+    }
 
     /**
      * Display a listing of the resource.
@@ -47,9 +67,10 @@ class PaymentController extends Controller
                 'cartItems' => collect(),
                 'isDraftCheckout' => false,
                 'backUrl' => route('orders.show', $order),
-                'codAvailable' => $existingTotalQty >= self::COD_MIN_QTY,
-                'codMinQty' => self::COD_MIN_QTY,
                 'totalQty' => $existingTotalQty,
+                'couriers' => self::COURIERS,
+                'freeShippingMinQty' => self::FREE_SHIPPING_MIN_QTY,
+                'freeShipping' => $existingTotalQty >= self::FREE_SHIPPING_MIN_QTY,
             ]);
         }
 
@@ -72,25 +93,17 @@ class PaymentController extends Controller
             return $item->product->harga * $item->qty;
         });
         $totalQty = (int) $cartItems->sum('qty');
-        $codAvailable = $totalQty >= self::COD_MIN_QTY;
 
-        // Auto-fill dari profile user
+        // Auto-fill dari profile user. Profil hanya menyimpan satu field
+        // alamat bebas, jadi isi itu ke alamat_lengkap apa adanya. Kota & kode
+        // pos dibiarkan kosong agar user mengisinya sendiri (keduanya wajib).
         $alamatProfil = trim((string) ($user->alamat ?? ''));
-        $kotaProfil = '';
-        $kodePosProfil = '';
-
-        // Coba ekstrak kode pos (5 digit) dari alamat user kalau ada
-        if (preg_match('/(\d{5})/', $alamatProfil, $m)) {
-            $kodePosProfil = $m[1];
-        }
 
         $draftOrder = (object) [
             'id' => null,
             'total_harga' => $totalHarga,
             'penerima_nama' => $user->name,
             'alamat_lengkap' => $alamatProfil,
-            'kota' => $kotaProfil,
-            'kode_pos' => $kodePosProfil,
             'nomor_telepon' => $user->nomor_telepon ?? '',
             'user' => $user,
         ];
@@ -100,9 +113,10 @@ class PaymentController extends Controller
             'cartItems' => $cartItems,
             'isDraftCheckout' => true,
             'backUrl' => route('carts.index'),
-            'codAvailable' => $codAvailable,
-            'codMinQty' => self::COD_MIN_QTY,
             'totalQty' => $totalQty,
+            'couriers' => self::COURIERS,
+            'freeShippingMinQty' => self::FREE_SHIPPING_MIN_QTY,
+            'freeShipping' => $totalQty >= self::FREE_SHIPPING_MIN_QTY,
         ]);
     }
 
@@ -113,11 +127,10 @@ class PaymentController extends Controller
     {
         $data = $request->validate([
             'order_id' => 'nullable|exists:orders,id',
-            'metode' => 'required|in:cod,va_dana,va_ovo,va_gopay',
+            'metode' => 'required|in:cod,va_dana,va_ovo,va_gopay,bank_bni,bank_bri,bank_bca',
+            'kurir' => 'required|in:' . implode(',', array_keys(self::COURIERS)),
             'penerima_nama' => 'required|string|max:255',
             'alamat_lengkap' => 'required|string|max:255',
-            'kota' => 'required|string|max:100',
-            'kode_pos' => 'required|digits:5',
             'nomor_telepon' => 'required|string|min:10|max:20',
         ]);
 
@@ -133,37 +146,30 @@ class PaymentController extends Controller
         }
         abort_if($itemsToProcess->isEmpty(), 404, 'Tidak ada produk valid untuk diproses');
 
-        // COD hanya untuk pesanan minimal beberapa pcs (lihat self::COD_MIN_QTY).
-        if ($data['metode'] === 'cod') {
-            $totalQty = (int) $itemsToProcess->sum('qty');
-            if ($totalQty < self::COD_MIN_QTY) {
-                return back()->withErrors([
-                    'metode' => 'Bayar di Tempat (COD) hanya tersedia untuk pesanan minimal '
-                        . self::COD_MIN_QTY . ' pcs. Saat ini di keranjangmu ada '
-                        . $totalQty . ' pcs. Tambah produk atau pilih e-wallet (DANA/OVO/GoPay).',
-                ])->withInput();
-            }
-        }
+        $totalQty = (int) $itemsToProcess->sum('qty');
+        $ongkir = self::hitungOngkir($data['kurir'], $totalQty);
 
         // Metode tersimpan di tabel payments. COD tetap "cod" (status pending sampai
-        // diterima), e-wallet disimpan persis nilainya (va_dana/va_ovo/va_gopay) dan
-        // langsung dianggap selesai (sudah dibayar di gateway).
-        $isEwallet = in_array($data['metode'], ['va_dana', 'va_ovo', 'va_gopay'], true);
+        // diterima). E-wallet & transfer bank disimpan persis nilainya dan langsung
+        // dianggap selesai (sudah dibayar di gateway / sudah transfer).
+        $isInstant = in_array($data['metode'], [
+            'va_dana', 'va_ovo', 'va_gopay', 'bank_bni', 'bank_bri', 'bank_bca',
+        ], true);
 
-        $order = DB::transaction(function () use ($itemsToProcess, $data, $isEwallet, $user) {
+        $order = DB::transaction(function () use ($itemsToProcess, $data, $isInstant, $user, $ongkir) {
             $totalHarga = $itemsToProcess->sum(function ($item) {
                 return $item->product->harga * $item->qty;
-            });
+            }) + $ongkir;
 
             $order = Order::create([
                 'user_id' => $user->id,
                 'total_harga' => $totalHarga,
-                'status' => $isEwallet ? 'dibayar' : 'pending',
+                'status' => $isInstant ? 'dibayar' : 'pending',
                 'penerima_nama' => $data['penerima_nama'],
                 'alamat_lengkap' => $data['alamat_lengkap'],
-                'kota' => $data['kota'],
-                'kode_pos' => $data['kode_pos'],
                 'nomor_telepon' => $data['nomor_telepon'],
+                'kurir' => $data['kurir'],
+                'ongkir' => $ongkir,
             ]);
 
             foreach ($itemsToProcess as $item) {
@@ -204,7 +210,7 @@ class PaymentController extends Controller
                 'order_id' => $order->id,
                 'metode' => $data['metode'],
                 'jumlah' => $order->total_harga,
-                'status' => $isEwallet ? 'selesai' : 'pending',
+                'status' => $isInstant ? 'selesai' : 'pending',
             ]);
 
             // Hanya hapus item yang benar-benar ikut dibayar (sisanya tetap di keranjang)

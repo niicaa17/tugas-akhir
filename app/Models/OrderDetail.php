@@ -11,6 +11,10 @@ class OrderDetail extends Model
         'product_id',
         'qty',
         'harga',
+        'rating',
+        'review_komentar',
+        'review_foto',
+        'reviewed_at',
     ];
 
     protected function casts(): array
@@ -18,7 +22,14 @@ class OrderDetail extends Model
         return [
             'qty' => 'integer',
             'harga' => 'integer',
+            'rating' => 'integer',
+            'reviewed_at' => 'datetime',
         ];
+    }
+
+    public function isReviewed(): bool
+    {
+        return ! is_null($this->reviewed_at);
     }
 
     public function order()

@@ -407,6 +407,15 @@
     }
     .udp-prod-foot { margin-top: auto; display: flex; align-items: center; justify-content: space-between; }
     .udp-sold-lbl { font-size: 11px; font-weight: 500; color: var(--muted); }
+    .udp-prod-rating {
+        display: flex; align-items: center; gap: 5px;
+        margin-bottom: 8px;
+    }
+    .udp-prod-stars { color: var(--gold); font-size: 13px; letter-spacing: 1px; line-height: 1; }
+    .udp-prod-stars .empty { color: rgba(201,168,76,0.28); }
+    .udp-prod-rating-val { font-size: 12px; font-weight: 600; color: var(--ink); }
+    .udp-prod-rating-count { font-size: 11px; color: var(--muted); }
+    .udp-prod-rating-empty { font-size: 11.5px; color: var(--muted); margin-bottom: 8px; }
     .udp-buy-btn {
         display: inline-flex; align-items: center;
         padding: 5px 12px;
@@ -671,6 +680,15 @@
                     <div class="udp-prod-body">
                         <div class="udp-prod-name">{{ $product->nama_produk }}</div>
                         <div class="udp-prod-price">Rp {{ number_format($product->harga, 0, ',', '.') }}</div>
+                        @php
+                            $avg = 4.9;
+                            $full = (int) round($avg);
+                            $stars = str_repeat('★', $full) . str_repeat('☆', max(0, 5 - $full));
+                        @endphp
+                        <div class="udp-prod-rating">
+                            <span class="udp-prod-stars">{{ $stars }}</span>
+                            <span class="udp-prod-rating-val">{{ number_format($avg, 1) }}</span>
+                        </div>
                         <div class="udp-prod-foot">
                             <span class="udp-sold-lbl">
                                 @if($isHabis)

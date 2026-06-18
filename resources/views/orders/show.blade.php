@@ -256,6 +256,9 @@
         'va_dana'  => 'E-Wallet DANA',
         'va_ovo'   => 'E-Wallet OVO',
         'va_gopay' => 'E-Wallet GoPay',
+        'bank_bni' => 'Transfer Bank BNI',
+        'bank_bri' => 'Transfer Bank BRI',
+        'bank_bca' => 'Transfer Bank BCA',
     ];
     $rawMetode = $firstPayment->metode ?? 'cod';
     $metodeLabel = $methodLabels[$rawMetode] ?? strtoupper($rawMetode);
@@ -718,9 +721,361 @@
         .ecard-body { padding: 16px 16px; }
         .tracker-header { flex-direction: column; align-items: flex-start; }
     }
+
+    /* ── PETA PENGIRIMAN ── */
+    .ship-map-wrap {
+        margin-top: 16px;
+        border: 1px solid rgba(74,138,106,0.18);
+        border-radius: 14px;
+        overflow: hidden;
+        background: #fff;
+    }
+    .ship-map-head {
+        display: flex; align-items: center; gap: 8px;
+        padding: 11px 14px;
+        font-size: 12.5px; font-weight: 700; color: #2f5a44;
+        background: linear-gradient(180deg, #eef7f1, #fff);
+        border-bottom: 1px solid rgba(74,138,106,0.14);
+    }
+    .ship-map-dot {
+        width: 9px; height: 9px; border-radius: 50%;
+        background: #34c759;
+        box-shadow: 0 0 0 4px rgba(52,199,89,0.2);
+        flex-shrink: 0;
+    }
+    .ship-map-status {
+        margin-left: auto;
+        font-size: 11px; font-weight: 600; color: #6b8c7c;
+    }
+    .ship-map {
+        width: 100%; height: 280px;
+        background: #aadaff;
+        z-index: 0;
+    }
+    .ship-map-foot {
+        padding: 10px 14px;
+        font-size: 12px; color: #6b8c7c;
+        border-top: 1px solid rgba(74,138,106,0.12);
+        background: #fafdfb;
+    }
+
+    /* ── PANEL LACAK PAKET (terang, ala Shopee) ── */
+    .track-panel { background: #fff; }
+    .track-eta {
+        display: flex; align-items: center; gap: 10px;
+        padding: 13px 14px;
+        background: linear-gradient(180deg, #eef7f1, #fff);
+        border-bottom: 1px solid rgba(74,138,106,0.12);
+    }
+    .track-eta-icon { font-size: 20px; }
+    .track-eta-label { font-size: 11px; color: #6b8c7c; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+    .track-eta-date { font-size: 15px; font-weight: 800; color: #2f5a44; }
+    .track-courier {
+        display: flex; align-items: center; gap: 10px;
+        padding: 12px 14px;
+        border-bottom: 1px solid rgba(74,138,106,0.10);
+    }
+    .track-courier-logo {
+        width: 40px; height: 40px; border-radius: 9px;
+        background: #D8232A; color: #fff;
+        display: flex; align-items: center; justify-content: center;
+        font-weight: 800; font-size: 11px; flex-shrink: 0;
+    }
+    .track-courier-name { font-size: 13.5px; font-weight: 700; color: #1f3a2c; }
+    .track-courier-sub { font-size: 11.5px; color: #6b8c7c; }
+    .track-resi {
+        margin-left: auto; text-align: right;
+    }
+    .track-resi-label { font-size: 10.5px; color: #6b8c7c; }
+    .track-resi-no { font-size: 12.5px; font-weight: 700; color: #2f5a44; letter-spacing: .02em; }
+
+    .track-timeline { padding: 16px 16px 6px; background: #fff; }
+    .track-step {
+        position: relative;
+        padding: 0 0 20px 28px;
+    }
+    .track-step::before {
+        content: '';
+        position: absolute; left: 6px; top: 16px; bottom: -4px;
+        width: 2px; background: #d8e6dd;
+    }
+    .track-step:last-child::before { display: none; }
+    .track-dot {
+        position: absolute; left: 0; top: 2px;
+        width: 14px; height: 14px; border-radius: 50%;
+        background: #cdd8d1; border: 3px solid #fff;
+        box-shadow: 0 0 0 1px #cdd8d1;
+    }
+    .track-step.is-active .track-dot {
+        background: #D8232A; box-shadow: 0 0 0 1px #D8232A, 0 0 0 5px rgba(216,35,42,.15);
+    }
+    .track-step.is-done .track-dot { background: #4A8A6A; box-shadow: 0 0 0 1px #4A8A6A; }
+    .track-step.is-active .track-text { color: #1f3a2c; font-weight: 700; }
+    .track-text { font-size: 13px; color: #5a6b62; line-height: 1.45; }
+    .track-time { font-size: 11px; color: #93a39a; margin-top: 2px; }
+    .track-highlight {
+        margin-top: 6px; padding: 8px 11px;
+        background: #fff4f4; border: 1px solid #ffd9d9; border-radius: 8px;
+        font-size: 11.5px; color: #b8364c; font-weight: 600; line-height: 1.4;
+    }
+
+    /* ── ULASAN PRODUK ── */
+    .rv-flash {
+        margin-bottom: 14px; padding: 10px 13px;
+        background: #eaf7ef; border: 1px solid #b9e3cb; border-radius: 9px;
+        color: #2f7a4d; font-size: 13px; font-weight: 600;
+    }
+    .rv-item {
+        padding: 14px 0;
+        border-bottom: 1px solid rgba(74,138,106,0.12);
+    }
+    .rv-item:last-child { border-bottom: none; }
+    .rv-prod { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+    .rv-prod-img {
+        width: 42px; height: 42px; border-radius: 9px; overflow: hidden;
+        background: #f0f5f1; display: flex; align-items: center; justify-content: center;
+        font-size: 18px; flex-shrink: 0;
+    }
+    .rv-prod-img img { width: 100%; height: 100%; object-fit: cover; }
+    .rv-prod-name { font-size: 13.5px; font-weight: 700; color: #1f3a2c; }
+
+    .rv-stars { display: flex; align-items: center; gap: 4px; margin-bottom: 8px; }
+    .rv-star {
+        background: none; border: none; cursor: pointer; padding: 0;
+        font-size: 26px; line-height: 1; color: #d6ddd6; transition: color .12s, transform .12s;
+    }
+    .rv-star:hover { transform: scale(1.12); }
+    .rv-star.on { color: #f5b50a; }
+
+    .rv-textarea {
+        width: 100%; border: 1px solid rgba(74,138,106,0.25); border-radius: 9px;
+        padding: 9px 11px; font-size: 13px; font-family: inherit; resize: vertical;
+        color: #1f3a2c; background: #fff; margin-bottom: 9px;
+    }
+    .rv-textarea:focus { outline: none; border-color: #4A8A6A; box-shadow: 0 0 0 3px rgba(74,138,106,.15); }
+
+    .rv-foto-label {
+        display: inline-flex; align-items: center; gap: 6px; cursor: pointer;
+        font-size: 12.5px; font-weight: 600; color: #4A8A6A;
+        padding: 7px 11px; border: 1px dashed rgba(74,138,106,0.4); border-radius: 8px;
+        margin-bottom: 10px;
+    }
+    .rv-foto-label:hover { background: #f0f7f2; }
+    .rv-foto-name { color: #6b8c7c; font-weight: 500; }
+
+    .rv-submit {
+        display: block; width: 100%;
+        background: #4A8A6A; color: #fff; border: none; cursor: pointer;
+        padding: 10px; border-radius: 9px; font-size: 13.5px; font-weight: 700;
+        transition: background .15s;
+    }
+    .rv-submit:hover { background: #3a7256; }
+    .rv-err { color: #d1546a; font-size: 11.5px; margin-bottom: 6px; }
+
+    .rv-done { background: #f7faf8; border-radius: 9px; padding: 11px 13px; }
+    .rv-stars-static { display: flex; align-items: center; gap: 2px; }
+    .rv-stars-static span { font-size: 17px; color: #d6ddd6; }
+    .rv-stars-static span.on { color: #f5b50a; }
+    .rv-rating-num { font-size: 12px; font-weight: 700; color: #6b8c7c; margin-left: 6px; }
+    .rv-comment { font-size: 13px; color: #3d5c4a; margin: 7px 0 0; line-height: 1.5; font-style: italic; }
+    .rv-photo { margin-top: 8px; max-width: 110px; border-radius: 8px; border: 1px solid rgba(74,138,106,0.15); }
+    .rv-by { font-size: 11px; color: #93a39a; margin-top: 7px; }
 </style>
 
+{{-- Leaflet (OpenStreetMap) — gratis, tanpa API key --}}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
 <script>document.body.classList.add('user-order-detail-page');</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const mapEl = document.getElementById('shipMap');
+        if (!mapEl || typeof L === 'undefined') return;
+
+        const statusEl = document.getElementById('shipMapStatus');
+        const footEl = document.getElementById('shipMapFoot');
+        const alamat   = (mapEl.dataset.alamat || '').trim();
+        const tokoAlm  = (mapEl.dataset.toko || '').trim();
+        const tokoNama = (mapEl.dataset.tokoNama || 'Toko').trim();
+        const orderStatus = (mapEl.dataset.status || 'pending').trim();
+        let progress = parseFloat(mapEl.dataset.progress || '0.06');
+        if (isNaN(progress)) progress = 0.06;
+
+        const fallback = [-2.5489, 118.0149];
+
+        const map = L.map(mapEl, { scrollWheelZoom: false }).setView(fallback, 5);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+            maxZoom: 19,
+            subdomains: 'abcd',
+            attribution: '&copy; OpenStreetMap &copy; CARTO'
+        }).addTo(map);
+
+        // ── Ikon kustom (toko, kurir, tujuan) ──
+        function divIcon(emoji, bg) {
+            return L.divIcon({
+                className: 'ship-pin',
+                html: '<div style="width:34px;height:34px;border-radius:50% 50% 50% 2px;'
+                    + 'transform:rotate(45deg);background:' + bg + ';box-shadow:0 3px 8px rgba(0,0,0,.3);'
+                    + 'display:flex;align-items:center;justify-content:center;border:2px solid #fff;">'
+                    + '<span style="transform:rotate(-45deg);font-size:16px;">' + emoji + '</span></div>',
+                iconSize: [34, 34],
+                iconAnchor: [17, 34],
+                popupAnchor: [0, -32],
+            });
+        }
+        const courierIcon = L.divIcon({
+            className: 'ship-courier',
+            html: '<div style="width:38px;height:38px;border-radius:50%;background:#fff;'
+                + 'box-shadow:0 4px 12px rgba(216,35,42,.4);display:flex;align-items:center;'
+                + 'justify-content:center;border:3px solid #D8232A;font-size:18px;">🛵</div>',
+            iconSize: [38, 38],
+            iconAnchor: [19, 19],
+            popupAnchor: [0, -20],
+        });
+
+        // Geocode satu alamat → {lat, lon} | null
+        function geocode(q) {
+            if (!q) return Promise.resolve(null);
+            const url = 'https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=id&q='
+                + encodeURIComponent(q);
+            return fetch(url, { headers: { 'Accept': 'application/json' } })
+                .then(r => r.json())
+                .then(d => (Array.isArray(d) && d.length) ? { lat: +d[0].lat, lon: +d[0].lon } : null)
+                .catch(() => null);
+        }
+
+        // Titik di sepanjang garis origin→dest pada fraksi t (0..1)
+        function lerp(a, b, t) {
+            return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
+        }
+
+        function statusText() {
+            if (orderStatus === 'selesai') return 'Paket telah sampai di tujuan';
+            if (orderStatus === 'dikirim') return 'Paket sedang dalam perjalanan';
+            return 'Paket sedang disiapkan toko';
+        }
+
+        if (!alamat) {
+            if (statusEl) statusEl.textContent = 'Alamat tidak tersedia';
+            setTimeout(() => map.invalidateSize(), 200);
+            return;
+        }
+
+        // Geocode tujuan & toko sekaligus
+        Promise.all([geocode(alamat), geocode(tokoAlm)]).then(([dest, origin]) => {
+            if (!dest) {
+                if (statusEl) statusEl.textContent = 'Lokasi tidak ditemukan';
+                if (footEl) footEl.textContent = 'Peta menampilkan area umum. Alamat tetap dipakai untuk pengiriman.';
+                setTimeout(() => map.invalidateSize(), 200);
+                return;
+            }
+
+            const destLL = [dest.lat, dest.lon];
+
+            // Marker tujuan (selalu ada)
+            L.marker(destLL, { icon: divIcon('🏠', '#4A8A6A') })
+                .addTo(map)
+                .bindPopup('<strong>Tujuan</strong><br>' + alamat);
+
+            // Kalau alamat toko tidak ketemu, jatuh ke titik buatan dekat tujuan
+            const originLL = origin
+                ? [origin.lat, origin.lon]
+                : [dest.lat + 0.045, dest.lon - 0.06];
+
+            // Marker toko (asal)
+            L.marker(originLL, { icon: divIcon('🏪', '#C8922A') })
+                .addTo(map)
+                .bindPopup('<strong>' + tokoNama + '</strong><br>Titik asal pengiriman');
+
+            // Garis rute: bagian sudah dilewati (solid) + sisa (putus-putus)
+            const courierLL = lerp(originLL, destLL, progress);
+
+            L.polyline([originLL, courierLL], {
+                color: '#ff4d4d', weight: 4, opacity: 0.95
+            }).addTo(map);
+            L.polyline([courierLL, destLL], {
+                color: '#7d8694', weight: 3, opacity: 0.8, dashArray: '6, 8'
+            }).addTo(map);
+
+            // Marker kurir (posisi paket saat ini)
+            const courierMarker = L.marker(courierLL, { icon: courierIcon })
+                .addTo(map)
+                .bindPopup('<strong>Posisi Paket</strong><br>' + statusText());
+
+            if (orderStatus === 'dikirim') courierMarker.openPopup();
+
+            // Fit semua titik ke layar
+            const bounds = L.latLngBounds([originLL, destLL, courierLL]).pad(0.25);
+            map.fitBounds(bounds);
+
+            if (statusEl) statusEl.textContent = statusText();
+            if (footEl) {
+                footEl.textContent = orderStatus === 'selesai'
+                    ? 'Paket sudah diterima di alamat tujuan.'
+                    : (orderStatus === 'dikirim'
+                        ? 'Ikon 🛵 menunjukkan perkiraan posisi paket menuju alamatmu.'
+                        : 'Paket sedang disiapkan di ' + tokoNama + ' sebelum dikirim.');
+            }
+
+            // Animasi kecil: kurir bergerak maju dikit saat status "dikirim"
+            if (orderStatus === 'dikirim') {
+                let t = progress, dir = 1;
+                setInterval(() => {
+                    t += dir * 0.004;
+                    if (t > progress + 0.05 || t < progress - 0.05) dir *= -1;
+                    courierMarker.setLatLng(lerp(originLL, destLL, t));
+                }, 120);
+            }
+
+            setTimeout(() => map.invalidateSize(), 200);
+        });
+    });
+</script>
+
+<script>
+    // ── Star rating + foto picker untuk form ulasan ──
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('[data-stars]').forEach(function (group) {
+            const stars = group.querySelectorAll('.rv-star');
+            const input = group.querySelector('input[name="rating"]');
+
+            function paint(val) {
+                stars.forEach(s => s.classList.toggle('on', parseInt(s.dataset.val, 10) <= val));
+            }
+
+            stars.forEach(function (star) {
+                star.addEventListener('mouseenter', () => paint(parseInt(star.dataset.val, 10)));
+                star.addEventListener('click', () => {
+                    input.value = star.dataset.val;
+                    paint(parseInt(star.dataset.val, 10));
+                });
+            });
+            group.addEventListener('mouseleave', () => paint(parseInt(input.value || '0', 10)));
+        });
+
+        // Tampilkan nama file foto yang dipilih
+        document.querySelectorAll('.rv-foto-label input[type="file"]').forEach(function (inp) {
+            inp.addEventListener('change', function () {
+                const nameEl = inp.parentElement.querySelector('.rv-foto-name');
+                if (nameEl) nameEl.textContent = inp.files.length ? '· ' + inp.files[0].name : '';
+            });
+        });
+
+        // Guard submit: rating wajib diisi
+        document.querySelectorAll('.rv-form').forEach(function (form) {
+            form.addEventListener('submit', function (e) {
+                const rating = form.querySelector('input[name="rating"]');
+                if (!rating.value) {
+                    e.preventDefault();
+                    alert('Pilih dulu jumlah bintang sebelum mengirim ulasan.');
+                }
+            });
+        });
+    });
+</script>
 
 @php
     $firstPayment = $order->payments->first();
@@ -842,6 +1197,80 @@
                     </div>
                 </div>
 
+                {{-- ULASAN PRODUK (hanya saat pesanan selesai) --}}
+                @if($order->status === 'selesai')
+                <div class="ecard">
+                    <div class="ecard-head">
+                        <div class="ecard-head-icon">⭐</div>
+                        <div>
+                            <div class="ecard-title">Beri Ulasan</div>
+                        </div>
+                    </div>
+                    <div class="ecard-body" style="padding-top:8px;">
+                        @if(session('success'))
+                            <div class="rv-flash">{{ session('success') }}</div>
+                        @endif
+
+                        @foreach ($order->orderDetails as $detail)
+                        <div class="rv-item">
+                            <div class="rv-prod">
+                                <div class="rv-prod-img">
+                                    @if($detail->product?->gambar)
+                                        <img src="{{ asset('storage/' . $detail->product->gambar) }}" alt="{{ $detail->product->nama_produk }}">
+                                    @else
+                                        <span>📦</span>
+                                    @endif
+                                </div>
+                                <div class="rv-prod-name">{{ $detail->product->nama_produk ?? 'Produk' }}</div>
+                            </div>
+
+                            @if($detail->isReviewed())
+                                {{-- Sudah diulas: tampilkan hasil --}}
+                                <div class="rv-done">
+                                    <div class="rv-stars-static">
+                                        @for($s = 1; $s <= 5; $s++)
+                                            <span class="{{ $s <= $detail->rating ? 'on' : '' }}">★</span>
+                                        @endfor
+                                        <span class="rv-rating-num">{{ $detail->rating }}/5</span>
+                                    </div>
+                                    @if($detail->review_komentar)
+                                        <p class="rv-comment">"{{ $detail->review_komentar }}"</p>
+                                    @endif
+                                    @if($detail->review_foto)
+                                        <img class="rv-photo" src="{{ asset('storage/' . $detail->review_foto) }}" alt="Foto ulasan">
+                                    @endif
+                                    <div class="rv-by"> Diulas oleh {{ $order->user?->name ?? 'kamu' }} · {{ $detail->reviewed_at?->format('d M Y') }}</div>
+                                </div>
+                            @else
+                                {{-- Belum diulas: form --}}
+                                <form action="{{ route('reviews.store', [$order, $detail]) }}" method="POST" enctype="multipart/form-data" class="rv-form">
+                                    @csrf
+                                    <div class="rv-stars" data-stars>
+                                        @for($s = 1; $s <= 5; $s++)
+                                            <button type="button" class="rv-star" data-val="{{ $s }}" aria-label="{{ $s }} bintang">★</button>
+                                        @endfor
+                                        <input type="hidden" name="rating" value="" required>
+                                    </div>
+                                    @error('rating')<div class="rv-err">{{ $message }}</div>@enderror
+
+                                    <textarea name="review_komentar" class="rv-textarea" rows="2" maxlength="1000" placeholder="Bagaimana produk ini? (opsional)"></textarea>
+
+                                    <label class="rv-foto-label">
+                                        📷 Tambah foto (opsional)
+                                        <input type="file" name="review_foto" accept="image/*" hidden>
+                                        <span class="rv-foto-name"></span>
+                                    </label>
+                                    @error('review_foto')<div class="rv-err">{{ $message }}</div>@enderror
+
+                                    <button type="submit" class="rv-submit">Kirim Ulasan</button>
+                                </form>
+                            @endif
+                        </div>
+                        @endforeach
+                    </div>
+                </div>
+                @endif
+
                 {{-- ALAMAT PENGIRIMAN --}}
                 <div class="ecard">
                     <div class="ecard-head">
@@ -876,6 +1305,132 @@
                             </div>
                         </div>
                         @endif
+
+                        {{-- PETA LOKASI PENGIRIMAN --}}
+                        @php
+                            $mapAlamat = trim(($order->alamat_lengkap ?? $order->alamat ?? '') . ' ' . ($order->kota ?? $order->user?->kota ?? ''));
+                            $shopUmkm  = $order->orderDetails->first(fn($d) => $d->product && $d->product->umkm)?->product?->umkm;
+                            $shopNama  = $shopUmkm?->nama_umkm ?? 'Toko UMKM';
+                            $shopAlamat = trim((string) ($shopUmkm?->alamat ?? ''));
+                            // Progress paket berdasarkan status order: pending=0, dikirim=tengah, selesai=tiba
+                            $mapProgress = match ($order->status) {
+                                'selesai'  => 1.0,
+                                'dikirim'  => 0.5,
+                                default    => 0.06,
+                            };
+                        @endphp
+                        <div class="ship-map-wrap">
+                            <div class="ship-map-head">
+                                <span class="ship-map-dot"></span>
+                                <span>Lokasi Pengiriman</span>
+                                <span class="ship-map-status" id="shipMapStatus">Memuat peta…</span>
+                            </div>
+                            <div id="shipMap" class="ship-map"
+                                 data-alamat="{{ $mapAlamat }}"
+                                 data-toko="{{ $shopAlamat }}"
+                                 data-toko-nama="{{ $shopNama }}"
+                                 data-status="{{ $order->status }}"
+                                 data-progress="{{ $mapProgress }}"></div>
+                            <div class="ship-map-foot" id="shipMapFoot">
+                                Paket akan dikirim ke alamat di atas.
+                            </div>
+
+                            {{-- ── PANEL LACAK PAKET (timeline ala Shopee) ── --}}
+                            @php
+                                $courierLabels = [
+                                    'jnt'         => ['J&T Express', 'JNT'],
+                                    'jne_reguler' => ['JNE Reguler', 'JNE'],
+                                    'spx_standar' => ['SPX Standar', 'SPX'],
+                                ];
+                                $kurirKey   = $order->kurir ?? 'jnt';
+                                $kurirNama  = $courierLabels[$kurirKey][0] ?? strtoupper($kurirKey);
+                                $kurirLogo  = $courierLabels[$kurirKey][1] ?? 'EXP';
+
+                                $orderDate  = $order->created_at;
+                                // Resi dummy yang stabil per order
+                                $resi = strtoupper($kurirLogo) . str_pad((string) $order->id, 9, '0', STR_PAD_LEFT) . 'ID';
+
+                                // Estimasi tiba: 2-4 hari setelah order
+                                $etaStart = $orderDate?->copy()->addDays(2);
+                                $etaEnd   = $orderDate?->copy()->addDays(4);
+                                $etaText  = $etaStart && $etaEnd
+                                    ? $etaStart->translatedFormat('d') . ' - ' . $etaEnd->translatedFormat('d M Y')
+                                    : '-';
+
+                                $st = $order->status;
+                                // Tahap: dibuat -> dikemas -> dikirim -> tiba
+                                $stepDone = [
+                                    'dibuat'  => in_array($st, ['pending','dikirim','selesai'], true),
+                                    'dikemas' => in_array($st, ['dikirim','selesai'], true),
+                                    'dikirim' => in_array($st, ['dikirim','selesai'], true),
+                                    'tiba'    => $st === 'selesai',
+                                ];
+                            @endphp
+
+                            @if($st !== 'dibatalkan')
+                            <div class="track-panel">
+                                <div class="track-eta">
+                                    <span class="track-eta-icon">🚚</span>
+                                    <div>
+                                        <div class="track-eta-label">Estimasi Tiba</div>
+                                        <div class="track-eta-date">{{ $etaText }}</div>
+                                    </div>
+                                </div>
+
+                                <div class="track-courier">
+                                    <div class="track-courier-logo">{{ $kurirLogo }}</div>
+                                    <div>
+                                        <div class="track-courier-name">{{ $kurirNama }}</div>
+                                        <div class="track-courier-sub">Reguler</div>
+                                    </div>
+                                    <div class="track-resi">
+                                        <div class="track-resi-label">No. Resi</div>
+                                        <div class="track-resi-no">{{ $resi }}</div>
+                                    </div>
+                                </div>
+
+                                <div class="track-timeline">
+                                    @if($st === 'selesai')
+                                    <div class="track-step is-active">
+                                        <span class="track-dot"></span>
+                                        <div class="track-text">Pesanan telah sampai di tujuan</div>
+                                        <div class="track-time">{{ $etaEnd?->translatedFormat('d M Y, H:i') }} WIB</div>
+                                        <div class="track-highlight">Paket telah diterima di {{ $order->kota ?? $order->user?->kota ?? 'alamat tujuan' }}.</div>
+                                    </div>
+                                    @endif
+
+                                    <div class="track-step {{ $st === 'dikirim' ? 'is-active' : ($stepDone['dikirim'] ? 'is-done' : '') }}">
+                                        <span class="track-dot"></span>
+                                        <div class="track-text">Paket dalam perjalanan menuju alamatmu</div>
+                                        @if($stepDone['dikirim'])
+                                        <div class="track-time">{{ $orderDate?->copy()->addDay()->translatedFormat('d M Y, H:i') }} WIB</div>
+                                        @if($st === 'dikirim')
+                                        <div class="track-highlight">Paket sedang dikirim oleh kurir {{ $kurirNama }} menuju {{ $order->kota ?? $order->user?->kota ?? 'kotamu' }}.</div>
+                                        @endif
+                                        @else
+                                        <div class="track-time">Menunggu paket dikirim</div>
+                                        @endif
+                                    </div>
+
+                                    <div class="track-step {{ $stepDone['dikemas'] && $st !== 'dikirim' && $st !== 'selesai' ? 'is-active' : ($stepDone['dikemas'] ? 'is-done' : '') }}">
+                                        <span class="track-dot"></span>
+                                        <div class="track-text">Paket telah disiapkan & diserahkan ke kurir</div>
+                                        @if($stepDone['dikemas'])
+                                        <div class="track-time">{{ $orderDate?->copy()->addHours(6)->translatedFormat('d M Y, H:i') }} WIB</div>
+                                        @else
+                                        <div class="track-time">Penjual sedang menyiapkan pesanan</div>
+                                        @endif
+                                    </div>
+
+                                    <div class="track-step {{ $st === 'pending' ? 'is-active' : 'is-done' }}">
+                                        <span class="track-dot"></span>
+                                        <div class="track-text">Pesanan dibuat & menunggu diproses</div>
+                                        <div class="track-time">{{ $orderDate?->translatedFormat('d M Y, H:i') }} WIB</div>
+                                    </div>
+                                </div>
+                            </div>
+                            @endif
+                        </div>
                     </div>
                 </div>
 
@@ -899,12 +1454,18 @@
                                                 'va_dana'  => 'E-Wallet DANA',
                                                 'va_ovo'   => 'E-Wallet OVO',
                                                 'va_gopay' => 'E-Wallet GoPay',
+                                                'bank_bni' => 'Transfer Bank BNI',
+                                                'bank_bri' => 'Transfer Bank BRI',
+                                                'bank_bca' => 'Transfer Bank BCA',
                                             ];
                                             $methodIcons = [
                                                 'cod'      => '🛵',
                                                 'va_dana'  => '📱',
                                                 'va_ovo'   => '📱',
                                                 'va_gopay' => '📱',
+                                                'bank_bni' => '🏦',
+                                                'bank_bri' => '🏦',
+                                                'bank_bca' => '🏦',
                                             ];
                                             $metodeLabel = $methodLabels[$rawMetode] ?? strtoupper($rawMetode);
                                             $metodeIcon  = $methodIcons[$rawMetode]  ?? '💰';

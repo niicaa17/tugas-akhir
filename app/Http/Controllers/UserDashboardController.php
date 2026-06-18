@@ -18,6 +18,8 @@ class UserDashboardController extends Controller
     {
         $topProducts = Product::with(['umkm'])
             ->withSum('orderDetails as total_terjual', 'qty')
+            ->withAvg('reviews as rating_avg', 'rating')
+            ->withCount('reviews as rating_count')
             ->orderByDesc('total_terjual')
             ->orderBy('nama_produk')
             ->limit(3)
@@ -31,8 +33,10 @@ class UserDashboardController extends Controller
      */
     public function showProduct(Product $product)
     {
-        $product->load('umkm');
+        $product->load('umkm', 'reviews.order.user');
         $product->loadSum('orderDetails as total_terjual', 'qty');
+        $product->loadAvg('reviews as rating_avg', 'rating');
+        $product->loadCount('reviews as rating_count');
 
         $otherProducts = Product::with('umkm')
             ->where('id', '!=', $product->id)

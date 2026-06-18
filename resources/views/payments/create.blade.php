@@ -457,6 +457,12 @@
     .ewallet-logo.dana { background: #118EEA; }
     .ewallet-logo.ovo  { background: #4C2A86; }
     .ewallet-logo.gopay { background: #00AED6; }
+    .ewallet-logo.bni  { background: #E87722; }
+    .ewallet-logo.bri  { background: #00529C; }
+    .ewallet-logo.bca  { background: #0066AE; }
+    .ewallet-logo.jnt  { background: #D8232A; }
+    .ewallet-logo.jne_reguler { background: #1E4598; }
+    .ewallet-logo.spx_standar { background: #F65A28; }
     .ewallet-name {
         font-size: 12.5px;
         font-weight: 700;
@@ -852,7 +858,12 @@
         const tabLabels = document.querySelectorAll('.pay-method[data-method]');
         const providerInputs = document.querySelectorAll('input[name="ewallet_provider"]');
         const providerLabels = document.querySelectorAll('.ewallet-option[data-provider]');
+        const bankInputs = document.querySelectorAll('input[name="bank_provider"]');
+        const bankLabels = document.querySelectorAll('.ewallet-option[data-bank]');
+        const courierInputs = document.querySelectorAll('input[name="kurir"]');
+        const courierLabels = document.querySelectorAll('.ewallet-option[data-courier]');
         const ewalletPicker = document.getElementById('ewalletPicker');
+        const bankPicker = document.getElementById('bankPicker');
         const payMetode = document.getElementById('payMetode');
 
         // VA info card (premium)
@@ -867,6 +878,9 @@
             'va_dana':  { title: 'Virtual Account DANA',  number: '008812345678901', icon: '💙' },
             'va_ovo':   { title: 'Virtual Account OVO',   number: '006612345678901', icon: '💜' },
             'va_gopay': { title: 'Virtual Account GoPay', number: '007712345678901', icon: '💎' },
+            'bank_bni': { title: 'Virtual Account BNI',   number: '988008812345678', icon: '🏦' },
+            'bank_bri': { title: 'Virtual Account BRI',   number: '262108812345678', icon: '🏦' },
+            'bank_bca': { title: 'Virtual Account BCA',   number: '120108812345678', icon: '🏦' },
         };
 
         function getCurrentTab() {
@@ -879,40 +893,83 @@
             return sel ? sel.value : 'va_dana';
         }
 
+        function getCurrentBank() {
+            const sel = document.querySelector('input[name="bank_provider"]:checked');
+            return sel ? sel.value : 'bank_bni';
+        }
+
         function refresh() {
             const tab = getCurrentTab();
 
             tabLabels.forEach(el => el.classList.toggle('is-active', el.dataset.method === tab));
 
+            // sembunyikan semua picker dulu
+            ewalletPicker.classList.remove('is-show');
+            if (bankPicker) bankPicker.classList.remove('is-show');
+
+            let selected = 'cod';
+
             if (tab === 'ewallet') {
                 ewalletPicker.classList.add('is-show');
-                const provider = getCurrentProvider();
-                payMetode.value = provider;
-                providerLabels.forEach(el => el.classList.toggle('is-active', el.dataset.provider === provider));
+                selected = getCurrentProvider();
+                providerLabels.forEach(el => el.classList.toggle('is-active', el.dataset.provider === selected));
+            } else if (tab === 'bank') {
+                if (bankPicker) bankPicker.classList.add('is-show');
+                selected = getCurrentBank();
+                bankLabels.forEach(el => el.classList.toggle('is-active', el.dataset.bank === selected));
+            }
 
-                const info = vaInfo[provider];
-                if (info && vaCard) {
-                    vaCard.classList.add('is-show');
-                    if (vaIcon)   vaIcon.textContent   = info.icon;
-                    if (vaTitle)  vaTitle.textContent  = info.title;
-                    if (vaNumber) vaNumber.textContent = info.number;
-                    // reset state tombol salin saat ganti provider
-                    if (vaCopyBtn) {
-                        vaCopyBtn.classList.remove('is-copied');
-                        const lbl = vaCopyBtn.querySelector('.lbl');
-                        if (lbl) lbl.textContent = 'Salin';
-                    }
+            payMetode.value = selected;
+
+            const info = vaInfo[selected];
+            if (tab !== 'cod' && info && vaCard) {
+                vaCard.classList.add('is-show');
+                if (vaIcon)   vaIcon.textContent   = info.icon;
+                if (vaTitle)  vaTitle.textContent  = info.title;
+                if (vaNumber) vaNumber.textContent = info.number;
+                if (vaCopyBtn) {
+                    vaCopyBtn.classList.remove('is-copied');
+                    const lbl = vaCopyBtn.querySelector('.lbl');
+                    if (lbl) lbl.textContent = 'Salin';
                 }
-            } else {
-                ewalletPicker.classList.remove('is-show');
-                payMetode.value = 'cod';
-                if (vaCard) vaCard.classList.remove('is-show');
+            } else if (vaCard) {
+                vaCard.classList.remove('is-show');
             }
         }
 
         tabInputs.forEach(i => i.addEventListener('change', refresh));
         providerInputs.forEach(i => i.addEventListener('change', refresh));
+        bankInputs.forEach(i => i.addEventListener('change', refresh));
+        courierLabels.forEach(el => {
+            const input = el.querySelector('input[name="kurir"]');
+            if (input) input.addEventListener('change', () => {
+                courierLabels.forEach(c => c.classList.toggle('is-active', c.dataset.courier === input.value));
+                updateOngkir(el);
+            });
+        });
         refresh();
+
+        // ── Ringkasan ongkir & total bayar ──
+        const summaryOngkir = document.getElementById('summaryOngkir');
+        const summaryGrand  = document.getElementById('summaryGrand');
+        const stickyGrand   = document.getElementById('stickyGrand');
+        const subtotalEl    = document.querySelector('[data-subtotal]');
+        const subtotal      = subtotalEl ? parseInt(subtotalEl.dataset.subtotal, 10) || 0 : 0;
+        const fmt = n => 'Rp ' + n.toLocaleString('id-ID');
+
+        function updateOngkir(label) {
+            if (!summaryOngkir) return;
+            const isFree = summaryOngkir.dataset.free === '1';
+            const ongkir = isFree ? 0 : (parseInt(label?.dataset.ongkir, 10) || 0);
+            summaryOngkir.textContent = (isFree || ongkir === 0) ? 'Gratis' : fmt(ongkir);
+            const grand = subtotal + ongkir;
+            if (summaryGrand) summaryGrand.innerHTML = '<small>Rp</small>' + grand.toLocaleString('id-ID');
+            if (stickyGrand)  stickyGrand.innerHTML  = '<small>Rp</small>' + grand.toLocaleString('id-ID');
+        }
+        // sinkron dengan kurir yang aktif saat load
+        const activeCourier = document.querySelector('.ewallet-option[data-courier].is-active')
+            || document.querySelector('.ewallet-option[data-courier]');
+        if (activeCourier) updateOngkir(activeCourier);
 
         // Tombol salin nomor VA
         if (vaCopyBtn) {
@@ -969,13 +1026,13 @@
         }
 
         // auto-open form kalau ada error validasi alamat
-        @if($errors->has('penerima_nama') || $errors->has('alamat_lengkap') || $errors->has('kota') || $errors->has('kode_pos') || $errors->has('nomor_telepon'))
+        @if($errors->has('penerima_nama') || $errors->has('alamat_lengkap') || $errors->has('nomor_telepon'))
             if (addrForm) addrForm.classList.add('is-open');
             if (addrEdit) addrEdit.innerHTML = closeIconHtml;
         @endif
 
         // auto-open form alamat kalau salah satu field utama masih kosong
-        const addrFields = ['penerima_nama','alamat_lengkap','kota','kode_pos','nomor_telepon'];
+        const addrFields = ['penerima_nama','alamat_lengkap','nomor_telepon'];
         const addrEmpty = addrFields.some(id => {
             const el = document.getElementById(id);
             return !el || !el.value.trim();
@@ -1017,7 +1074,9 @@
                 Kembali
             </a>
             <span class="pay-topbar-title">Checkout</span>
-            <span class="pay-step-pill">{{ $isDraftCheckout ? 'Draf Pembelian' : 'Order #' . sprintf('%04d', $order->id) }}</span>
+            @unless($isDraftCheckout)
+            <span class="pay-step-pill">{{ 'Order #' . sprintf('%04d', $order->id) }}</span>
+            @endunless
         </div>
     </div>
 
@@ -1057,7 +1116,7 @@
 
         <div class="pay-layout">
             <div class="pay-main">
-        <form action="{{ route('payments.store') }}" method="POST" enctype="multipart/form-data" id="payForm">
+        <form action="{{ route('payments.store') }}" method="POST" id="payForm">
             @csrf
             @if (! $isDraftCheckout)
                 <input type="hidden" name="order_id" value="{{ $order->id }}">
@@ -1076,19 +1135,30 @@
                 </div>
 
                 <div class="pay-address-body">
+                    @php
+                        $alm = old('alamat_lengkap', $order->alamat_lengkap ?? '');
+                        $nm  = old('penerima_nama', $order->penerima_nama ?? $order->user?->name ?? '');
+                        $hp  = old('nomor_telepon', $order->nomor_telepon ?? '');
+                        $addressComplete = $alm && $nm && $hp;
+                    @endphp
                     <div class="pay-receiver">
-                        <span class="pay-address-default">Alamat utama</span>
-                        <div class="pay-receiver-name">{{ old('penerima_nama', $order->penerima_nama ?? $order->user?->name ?? 'Pelanggan') }}</div>
-                        <div class="pay-receiver-phone">{{ old('nomor_telepon', $order->nomor_telepon ?? '—') }}</div>
+                        @if ($addressComplete)
+                            <span class="pay-address-default">Alamat utama</span>
+                        @else
+                            <span class="pay-address-default" style="background:rgba(200,146,42,0.12);color:#a06d12;">Perlu dilengkapi</span>
+                        @endif
+                        <div class="pay-receiver-name">{{ $nm ?: 'Pelanggan' }}</div>
+                        <div class="pay-receiver-phone">{{ $hp ?: '—' }}</div>
                     </div>
                     <div class="pay-address-text">
-                        @php
-                            $alm = old('alamat_lengkap', $order->alamat_lengkap ?? '');
-                            $kt  = old('kota', $order->kota ?? '');
-                            $kp  = old('kode_pos', $order->kode_pos ?? '');
-                            $full = trim($alm . ($kt ? ', ' . $kt : '') . ($kp ? ' ' . $kp : ''));
-                        @endphp
-                        {{ $full ?: 'Alamat belum diisi. Klik tombol di samping untuk menambahkan alamat pengiriman.' }}
+                        @if ($alm)
+                            {{ $alm }}
+                            @unless ($addressComplete)
+                                <div style="margin-top:6px;font-size:12px;color:#a06d12;">Lengkapi nama penerima dan nomor telepon lewat tombol di samping.</div>
+                            @endunless
+                        @else
+                            Alamat belum diisi. Klik <strong>Ubah Alamat</strong> di samping untuk menambahkan alamat pengiriman.
+                        @endif
                     </div>
                     <a href="#" id="addrEditBtn" class="pay-address-edit">
                         <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true">
@@ -1124,37 +1194,9 @@
                             <label class="pay-label" for="alamat_lengkap">Alamat Lengkap <span style="color:#d1546a;">*</span></label>
                             <textarea id="alamat_lengkap" name="alamat_lengkap"
                                       class="pay-textarea @error('alamat_lengkap') is-error @enderror"
-                                      rows="3" placeholder="Jalan, nomor rumah, RT/RW, kelurahan, kecamatan">{{ old('alamat_lengkap', $order->alamat_lengkap ?? '') }}</textarea>
+                                      rows="3" placeholder="Jalan, nomor rumah, RT/RW, kelurahan, kecamatan, kota">{{ old('alamat_lengkap', $order->alamat_lengkap ?? '') }}</textarea>
                             <div class="pay-hint">Tulis sedetail mungkin agar paket tidak salah kirim.</div>
                             @error('alamat_lengkap')<div class="pay-error">{{ $message }}</div>@enderror
-                        </div>
-
-                        <div>
-                            <label class="pay-label" for="kota">Kota / Kabupaten <span style="color:#d1546a;">*</span></label>
-                            <input type="text" id="kota" name="kota"
-                                   class="pay-input @error('kota') is-error @enderror"
-                                   value="{{ old('kota', $order->kota ?? '') }}"
-                                   placeholder="Contoh: Jambi">
-                            @error('kota')<div class="pay-error">{{ $message }}</div>@enderror
-                        </div>
-
-                        <div>
-                            <label class="pay-label" for="kode_pos">Kode Pos <span style="color:#d1546a;">*</span></label>
-                            <input type="text" id="kode_pos" name="kode_pos"
-                                   class="pay-input @error('kode_pos') is-error @enderror"
-                                   value="{{ old('kode_pos', $order->kode_pos ?? '') }}"
-                                   placeholder="5 digit angka, contoh 36123" pattern="[0-9]{5}" maxlength="5" inputmode="numeric">
-                            @error('kode_pos')<div class="pay-error">{{ $message }}</div>@enderror
-                        </div>
-
-                        <div class="full">
-                            @if ($isDraftCheckout)
-                                <p class="pay-hint">
-                                    Tip: simpan alamat ini sebagai default lewat
-                                    <a href="{{ route('user.profile') }}" style="color:var(--moss);font-weight:600;">Profil Saya</a>,
-                                    supaya tidak perlu mengisi ulang setiap belanja.
-                                </p>
-                            @endif
                         </div>
 
                         <div class="pay-form-actions">
@@ -1272,6 +1314,46 @@
                 </div>
             @endif
 
+            {{-- ════ PENGIRIMAN / KURIR ════ --}}
+            @php
+                $courierList = $couriers ?? [];
+                $freeShip = $freeShipping ?? false;
+                $oldKurir = old('kurir', array_key_first($courierList) ?: 'jnt');
+            @endphp
+            <div class="pay-card">
+                <div class="pay-card-head">
+                    <span class="pay-shop-tag" style="background:rgba(74,124,74,0.10);color:var(--moss);">Kurir</span>
+                    <span class="pay-shop-name">Pilih Pengiriman</span>
+                </div>
+
+                @if ($freeShip)
+                    <div style="margin:14px 22px 0;padding:11px 14px;border-radius:10px;background:rgba(74,124,74,0.10);border:1px solid rgba(74,124,74,0.25);color:var(--moss);font-size:12.5px;font-weight:600;">
+                        🎉 Selamat! Pesananmu {{ $totalQty ?? 0 }} pcs &mdash; gratis ongkir untuk semua kurir.
+                    </div>
+                @else
+                    <div style="margin:14px 22px 0;padding:11px 14px;border-radius:10px;background:rgba(200,146,42,0.12);border:1px solid rgba(200,146,42,0.3);color:#a06d12;font-size:12.5px;font-weight:600;">
+                        Beli minimal {{ $freeShippingMinQty ?? 5 }} pcs untuk gratis ongkir. Saat ini: {{ $totalQty ?? 0 }} pcs.
+                    </div>
+                @endif
+
+                <div class="ewallet-picker is-show" style="margin-top:14px;">
+                    <div class="ewallet-picker-label">Pilih Kurir</div>
+                    <div class="ewallet-options">
+                        @foreach ($courierList as $key => $courier)
+                            <label class="ewallet-option {{ $oldKurir === $key ? 'is-active' : '' }}" data-courier="{{ $key }}" data-ongkir="{{ $freeShip ? 0 : $courier['ongkir'] }}">
+                                <input type="radio" name="kurir" value="{{ $key }}" {{ $oldKurir === $key ? 'checked' : '' }}>
+                                <div class="ewallet-logo {{ $key }}" style="font-size:10px;">{{ strtoupper(substr($courier['label'], 0, 3)) }}</div>
+                                <div class="ewallet-name">{{ $courier['label'] }}</div>
+                                <div style="font-size:11px;color:var(--ink-muted);font-weight:600;">
+                                    {{ $freeShip ? 'Gratis' : 'Rp ' . number_format($courier['ongkir'], 0, ',', '.') }}
+                                </div>
+                            </label>
+                        @endforeach
+                    </div>
+                    @error('kurir')<div class="pay-error" style="margin-top:8px;">{{ $message }}</div>@enderror
+                </div>
+            </div>
+
             {{-- ════ METODE PEMBAYARAN ════ --}}
             <div class="pay-card">
                 <div class="pay-card-head">
@@ -1279,50 +1361,44 @@
                     <span class="pay-shop-name">Pilih Pembayaran</span>
                 </div>
 
-                <div class="pay-method-grid" style="grid-template-columns: repeat(2, minmax(0, 1fr));">
+                <div class="pay-method-grid" style="grid-template-columns: repeat(3, minmax(0, 1fr));">
                     @php
                         $oldMetode = old('metode');
-                        $oldIsEwallet = in_array($oldMetode, ['va_dana','va_ovo','va_gopay'], true);
-                        // Provider e-wallet yang dipilih (kalau old form pernah pilih e-wallet)
-                        $oldEwalletProvider = $oldIsEwallet ? $oldMetode : 'va_dana';
+                        $ewalletVals = ['va_dana','va_ovo','va_gopay'];
+                        $bankVals    = ['bank_bni','bank_bri','bank_bca'];
+                        $oldIsEwallet = in_array($oldMetode, $ewalletVals, true);
+                        $oldIsBank    = in_array($oldMetode, $bankVals, true);
 
-                        // Default tab metode utama:
-                        //   - kalau old() ada, ikuti itu (cod / "ewallet")
-                        //   - kalau tidak: default ke COD jika tersedia, kalau tidak ke e-wallet
+                        $oldEwalletProvider = $oldIsEwallet ? $oldMetode : 'va_dana';
+                        $oldBankProvider    = $oldIsBank ? $oldMetode : 'bank_bni';
+
+                        // Tab metode utama: cod / ewallet / bank
                         if ($oldMetode === 'cod') {
                             $selectedTab = 'cod';
                         } elseif ($oldIsEwallet) {
                             $selectedTab = 'ewallet';
+                        } elseif ($oldIsBank) {
+                            $selectedTab = 'bank';
                         } else {
-                            $selectedTab = ($codAvailable ?? true) ? 'cod' : 'ewallet';
+                            $selectedTab = 'cod';
                         }
 
-                        // Field "metode" sebenarnya yg ke-submit:
-                        //   - cod => "cod"
-                        //   - ewallet => provider yang dipilih (default va_dana)
-                        $selectedMetode = $selectedTab === 'cod' ? 'cod' : $oldEwalletProvider;
+                        // Field "metode" yang sebenarnya disubmit:
+                        if ($selectedTab === 'ewallet') {
+                            $selectedMetode = $oldEwalletProvider;
+                        } elseif ($selectedTab === 'bank') {
+                            $selectedMetode = $oldBankProvider;
+                        } else {
+                            $selectedMetode = 'cod';
+                        }
                     @endphp
 
-                    <label class="pay-method {{ $selectedTab === 'cod' ? 'is-active' : '' }} {{ ($codAvailable ?? true) ? '' : 'is-disabled' }}"
-                           data-method="cod"
-                           @if(! ($codAvailable ?? true)) title="COD hanya untuk pesanan minimal {{ $codMinQty ?? 5 }} pcs" @endif>
-                        <input type="radio" name="pay_tab" value="cod"
-                               {{ $selectedTab === 'cod' ? 'checked' : '' }}
-                               @if(! ($codAvailable ?? true)) disabled @endif>
-                        @if(! ($codAvailable ?? true))
-                            <span class="pay-method-lock">Terkunci</span>
-                        @else
-                            <span class="pay-method-badge">Populer</span>
-                        @endif
+                    <label class="pay-method {{ $selectedTab === 'cod' ? 'is-active' : '' }}" data-method="cod">
+                        <input type="radio" name="pay_tab" value="cod" {{ $selectedTab === 'cod' ? 'checked' : '' }}>
+                        <span class="pay-method-badge">Populer</span>
                         <div class="pay-method-icon">💵</div>
                         <div class="pay-method-title">Bayar di Tempat (COD)</div>
                         <div class="pay-method-desc">Bayar tunai saat paket diterima. Tanpa biaya tambahan.</div>
-                        @if(! ($codAvailable ?? true))
-                            <div class="pay-method-note">
-                                Minimal {{ $codMinQty ?? 5 }} pcs untuk COD.
-                                Saat ini: {{ $totalQty ?? 0 }} pcs.
-                            </div>
-                        @endif
                     </label>
 
                     <label class="pay-method {{ $selectedTab === 'ewallet' ? 'is-active' : '' }}" data-method="ewallet">
@@ -1331,6 +1407,14 @@
                         <div class="pay-method-icon">📱</div>
                         <div class="pay-method-title">E-Wallet</div>
                         <div class="pay-method-desc">DANA, OVO, atau GoPay &mdash; pembayaran langsung tanpa tunggu.</div>
+                    </label>
+
+                    <label class="pay-method {{ $selectedTab === 'bank' ? 'is-active' : '' }}" data-method="bank">
+                        <input type="radio" name="pay_tab" value="bank" {{ $selectedTab === 'bank' ? 'checked' : '' }}>
+                        <span class="pay-method-badge gold">Transfer</span>
+                        <div class="pay-method-icon">🏦</div>
+                        <div class="pay-method-title">Transfer Bank</div>
+                        <div class="pay-method-desc">BNI, BRI, atau BCA &mdash; transfer ke Virtual Account.</div>
                     </label>
                 </div>
 
@@ -1352,8 +1436,26 @@
                     </div>
                 </div>
 
+                {{-- Picker bank (muncul kalau tab transfer bank dipilih) --}}
+                <div class="ewallet-picker {{ $selectedTab === 'bank' ? 'is-show' : '' }}" id="bankPicker">
+                    <div class="ewallet-picker-label">Pilih Bank</div>
+                    <div class="ewallet-options">
+                        @foreach([
+                            ['bank_bni', 'bni', 'BNI', 'BNI'],
+                            ['bank_bri', 'bri', 'BRI', 'BRI'],
+                            ['bank_bca', 'bca', 'BCA', 'BCA'],
+                        ] as [$value, $cls, $label, $logoText])
+                            <label class="ewallet-option {{ $selectedMetode === $value ? 'is-active' : '' }}" data-bank="{{ $value }}">
+                                <input type="radio" name="bank_provider" value="{{ $value }}" {{ $selectedMetode === $value ? 'checked' : '' }}>
+                                <div class="ewallet-logo {{ $cls }}">{{ $logoText }}</div>
+                                <div class="ewallet-name">{{ $label }}</div>
+                            </label>
+                        @endforeach
+                    </div>
+                </div>
+
                 {{-- Hidden field "metode" yang sebenarnya disubmit ke backend.
-                     Diupdate via JS sesuai pilihan tab dan provider e-wallet. --}}
+                     Diupdate via JS sesuai pilihan tab dan provider. --}}
                 <input type="hidden" name="metode" id="payMetode" value="{{ $selectedMetode }}">
                 @error('metode')<div class="pay-error" style="padding:0 22px 14px;">{{ $message }}</div>@enderror
 
@@ -1403,6 +1505,9 @@
                     $asideTotal = $cartItems->count() ? $cartItems->sum(fn($i) => $i->product->harga * $i->qty) : ($order->total_harga ?? 0);
                     $asideQty   = $cartItems->count() ? (int) $cartItems->sum('qty') : (int) ($totalQty ?? 0);
                     $asideItems = $cartItems->count() ? $cartItems->count() : ($order->orderDetails?->count() ?? 0);
+                    $shipFree   = $freeShipping ?? false;
+                    $initialKurir = old('kurir', array_key_first($couriers ?? []) ?: 'jnt');
+                    $initialOngkir = $shipFree ? 0 : (($couriers[$initialKurir]['ongkir']) ?? 0);
                 @endphp
 
                 <div class="pay-summary-card">
@@ -1413,11 +1518,13 @@
                     <div class="pay-summary-card-body">
                         <div class="pay-summary-line">
                             <span>Subtotal ({{ $asideItems }} produk &middot; {{ $asideQty }} pcs)</span>
-                            <strong>Rp {{ number_format($asideTotal, 0, ',', '.') }}</strong>
+                            <strong data-subtotal="{{ $asideTotal }}">Rp {{ number_format($asideTotal, 0, ',', '.') }}</strong>
                         </div>
                         <div class="pay-summary-line">
                             <span>Ongkos kirim</span>
-                            <strong style="color:var(--moss);">Gratis</strong>
+                            <strong id="summaryOngkir" data-free="{{ $shipFree ? '1' : '0' }}" style="color:var(--moss);">
+                                {{ $shipFree ? 'Gratis' : 'Rp ' . number_format($initialOngkir, 0, ',', '.') }}
+                            </strong>
                         </div>
                         <div class="pay-summary-line is-divider">
                             <span>Diskon</span>
@@ -1425,7 +1532,7 @@
                         </div>
                         <div class="pay-summary-line is-grand">
                             <span><strong>Total bayar</strong></span>
-                            <span class="pay-grand"><small>Rp</small>{{ number_format($asideTotal, 0, ',', '.') }}</span>
+                            <span class="pay-grand" id="summaryGrand"><small>Rp</small>{{ number_format($asideTotal + $initialOngkir, 0, ',', '.') }}</span>
                         </div>
                     </div>
                 </div>
@@ -1454,7 +1561,7 @@
             </div>
             <div class="pay-summary-row is-total">
                 <span class="lbl">Total bayar:</span>
-                <span class="val"><small>Rp</small>{{ number_format($order->total_harga, 0, ',', '.') }}</span>
+                <span class="val" id="stickyGrand"><small>Rp</small>{{ number_format(($order->total_harga ?? 0) + ($freeShipping ?? false ? 0 : (($couriers[old('kurir', array_key_first($couriers ?? []) ?: 'jnt')]['ongkir']) ?? 0)), 0, ',', '.') }}</span>
             </div>
         </div>
         <button type="submit" form="payForm" class="pay-btn-buy">

@@ -9,6 +9,7 @@ use App\Http\Controllers\MemberController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\UserDashboardController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -61,6 +62,7 @@ Route::middleware(['auth', 'role:user'])->group(function () {
     Route::post('/carts/remove', [CartController::class, 'remove'])->name('carts.remove');
     Route::post('/carts/checkout', [CartController::class, 'checkout'])->name('carts.checkout');
     Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
+    Route::post('/orders/{order}/details/{detail}/review', [ReviewController::class, 'store'])->name('reviews.store');
     Route::resource('payments', PaymentController::class)->except(['index', 'edit', 'update', 'destroy']);
 });
 

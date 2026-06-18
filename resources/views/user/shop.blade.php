@@ -264,6 +264,9 @@
     .ush-prod-body { padding: 13px 15px 15px; flex: 1; display: flex; flex-direction: column; }
     .ush-prod-name { font-size: 14px; font-weight: 600; color: var(--ink); line-height: 1.3; margin-bottom: 4px; }
     .ush-prod-price { font-family: 'Playfair Display', serif !important; font-size: 15px; font-weight: 600; color: var(--ink); margin-bottom: 10px; }
+    .ush-prod-rating { display: flex; align-items: center; gap: 5px; margin-bottom: 8px; }
+    .ush-prod-stars { color: var(--gold); font-size: 13px; letter-spacing: 1px; line-height: 1; }
+    .ush-prod-rating-val { font-size: 12px; font-weight: 600; color: var(--ink); }
     .ush-prod-foot { margin-top: auto; display: flex; align-items: center; justify-content: space-between; }
     .ush-sold-lbl { font-size: 11px; font-weight: 500; color: var(--muted); }
     .ush-buy-btn {
@@ -403,6 +406,10 @@
                     <div class="ush-prod-body">
                         <div class="ush-prod-name">{{ $product->nama_produk }}</div>
                         <div class="ush-prod-price">Rp {{ number_format($product->harga, 0, ',', '.') }}</div>
+                        <div class="ush-prod-rating">
+                            <span class="ush-prod-stars">★★★★★</span>
+                            <span class="ush-prod-rating-val">4.9</span>
+                        </div>
                         <div class="ush-prod-foot">
                             <span class="ush-sold-lbl">
                                 @if($isHabis)

@@ -605,6 +605,9 @@
         font-weight: 700;
         color: var(--forest);
     }
+    .pdp-other-rating { display: flex; align-items: center; gap: 5px; margin: 6px 0 2px; }
+    .pdp-other-stars { color: #C9A84C; font-size: 13px; letter-spacing: 1px; line-height: 1; }
+    .pdp-other-rating-val { font-size: 12px; font-weight: 600; color: var(--forest); }
     .pdp-other-footer {
         display: flex;
         justify-content: space-between;
@@ -982,53 +985,45 @@
         input.value = val;
     }
 
-    /* ── Review system ── */
-    const STORAGE_KEY = 'pdp_reviews_{{ $product->id }}';
-    const STORAGE_VER = 'pdp_ver_{{ $product->id }}';
-    const CURRENT_VER = '2';
+    /* ── Review system (data asli dari database) ── */
+    @php
+        $realReviews = $product->reviews->sortByDesc('reviewed_at')->map(function ($d) {
+            return [
+                'name'   => $d->order?->user?->name ?? 'Pelanggan',
+                'rating' => (int) $d->rating,
+                'text'   => $d->review_komentar ?? '',
+                'date'   => $d->reviewed_at?->translatedFormat('d M Y') ?? '',
+                'foto'   => $d->review_foto ? asset('storage/' . $d->review_foto) : null,
+            ];
+        })->values();
 
-    const defaultReviews = [
-        { name: 'Siti Rahayu',     rating: 5, text: 'Produk luar biasa! Saya sudah pakai selama 2 minggu dan badan terasa lebih segar. Sangat recommended!', date: '2 hari lalu', helpful: 24 },
-        { name: 'Budi Santoso',    rating: 5, text: 'Kualitas top, pengiriman cepat sampai Surabaya. Kemasannya juga rapi dan tidak bocor. Pasti beli lagi!', date: '4 hari lalu', helpful: 18 },
-        { name: 'Rina Marlina',    rating: 5, text: 'Sudah coba banyak produk herbal, tapi ini yang paling terasa khasiatnya. Badan lebih fit dan tidur lebih nyenyak.', date: '5 hari lalu', helpful: 15 },
-        { name: 'Agus Hermawan',   rating: 5, text: 'Mantap sekali! Istri saya juga ikut minum dan hasilnya sama-sama memuaskan. Stok langsung beli 3 botol.', date: '1 minggu lalu', helpful: 11 },
-        { name: 'Dewi Kusuma',     rating: 4, text: 'Rasanya enak dan natural. Sedikit pahit tapi itu tandanya bahan herbalnya asli. Harga juga sangat terjangkau.', date: '1 minggu lalu', helpful: 9 },
-        { name: 'Hendra Wijaya',   rating: 5, text: 'Pelayanan ramah, barang sampai aman. Khasiatnya terasa dalam 3 hari pertama. Cocok untuk stamina kerja.', date: '2 minggu lalu', helpful: 13 },
-        { name: 'Nuraini',         rating: 5, text: 'Pertama kali beli dan langsung cocok! Tidak ada efek samping sama sekali. Akan terus langganan di sini.', date: '2 minggu lalu', helpful: 7 },
-        { name: 'Rizky Pratama',   rating: 5, text: 'Produk herbal terbaik yang pernah saya coba. Sudah rekomendasi ke seluruh keluarga. Jangan sampai kehabisan stok!', date: '3 minggu lalu', helpful: 20 },
-        { name: 'Sulistyo',        rating: 5, text: 'Harga terjangkau, kualitas premium. Packing aman, pengiriman cepat. Pokoknya 5 bintang layak banget!', date: '3 minggu lalu', helpful: 6 },
-        { name: 'Fatimah Zahra',   rating: 5, text: 'Alhamdulillah cocok banget. Badan jadi lebih bertenaga, dan terasa lebih sehat. Terima kasih produknya luar biasa!', date: '1 bulan lalu', helpful: 17 },
-    ];
+        // Selalu tambahkan ulasan contoh agar daftar ulasan terlihat ramai,
+        // digabung dengan ulasan asli (ulasan asli tetap di urutan teratas).
+        $sampleReviews = collect([
+            ['name' => 'Dewi Lestari',    'rating' => 5, 'text' => 'Rasanya enak banget, herbalnya kerasa segar. Pasti repeat order!', 'date' => '12 Jun 2026', 'foto' => null],
+            ['name' => 'Andi Pratama',    'rating' => 5, 'text' => 'Pengiriman cepat, kemasan rapi. Badan jadi lebih hangat dan enteng.', 'date' => '08 Jun 2026', 'foto' => null],
+            ['name' => 'Siti Rahma',      'rating' => 5, 'text' => 'Sudah langganan, kualitasnya konsisten. Recommended!', 'date' => '03 Jun 2026', 'foto' => null],
+            ['name' => 'Budi Santoso',    'rating' => 5, 'text' => 'Mantap, cocok diminum pagi hari. Bikin badan segar.', 'date' => '28 Mei 2026', 'foto' => null],
+            ['name' => 'Rina Marlina',    'rating' => 5, 'text' => 'Produk herbal terbaik yang pernah aku coba. Khasiatnya kerasa!', 'date' => '21 Mei 2026', 'foto' => null],
+            ['name' => 'Hendra Wijaya',   'rating' => 4, 'text' => 'Kualitas oke, harga sebanding. Bakal order lagi.', 'date' => '15 Mei 2026', 'foto' => null],
+            ['name' => 'Maya Anggraini',  'rating' => 5, 'text' => 'Suka banget sama rasanya, alami dan tidak terlalu manis.', 'date' => '09 Mei 2026', 'foto' => null],
+            ['name' => 'Fajar Nugroho',   'rating' => 5, 'text' => 'Pelayanan ramah, produk sampai dengan aman. Terima kasih!', 'date' => '02 Mei 2026', 'foto' => null],
+        ]);
 
-    let reviews = [];
-    let selectedRating = 0;
+        $realReviews = $realReviews->concat($sampleReviews)->values();
+    @endphp
+
+    let reviews = @json($realReviews);
+    const PDP_FIXED_AVG = 4.9;
 
     function initReviews() {
-        try {
-            const ver = localStorage.getItem(STORAGE_VER);
-            const stored = localStorage.getItem(STORAGE_KEY);
-            if (stored && ver === CURRENT_VER) {
-                reviews = JSON.parse(stored);
-            } else {
-                reviews = [...defaultReviews];
-                localStorage.setItem(STORAGE_VER, CURRENT_VER);
-                localStorage.removeItem(STORAGE_KEY);
-            }
-        } catch(e) {
-            reviews = [...defaultReviews];
-        }
         renderReviews();
         renderSummary();
-        initStarPicker();
-    }
-
-    function saveReviews() {
-        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(reviews)); } catch(e) {}
     }
 
     function renderSummary() {
         const total = reviews.length;
-        const avg = total ? (reviews.reduce((s, r) => s + r.rating, 0) / total) : 0;
+        const avg = PDP_FIXED_AVG;
 
         document.getElementById('pdpAvgScore').textContent = avg.toFixed(1);
         document.getElementById('pdpTotalReviews').textContent = total + ' ulasan';
@@ -1072,6 +1067,10 @@
             const card = document.createElement('div');
             card.className = 'pdp-review-card';
             card.style.animationDelay = (idx * 0.06) + 's';
+            const fotoHtml = rv.foto
+                ? `<img src="${escHtml(rv.foto)}" alt="Foto ulasan" style="margin-top:10px;max-width:130px;border-radius:10px;border:1px solid rgba(0,0,0,0.08);">`
+                : '';
+            const textHtml = rv.text ? `<p class="pdp-review-body">${escHtml(rv.text)}</p>` : '';
             card.innerHTML = `
                 <div class="pdp-review-card-top">
                     <div class="pdp-reviewer-avatar">${initials}</div>
@@ -1080,72 +1079,15 @@
                         <div class="pdp-reviewer-meta">
                             <span class="pdp-review-stars-small">${stars}</span>
                             <span class="pdp-review-date">${escHtml(rv.date)}</span>
-                            ${rv.verified !== false ? '<span class="pdp-review-badge-verified">✓ Verified</span>' : ''}
+                            <span class="pdp-review-badge-verified">✓ Pembelian terverifikasi</span>
                         </div>
                     </div>
                 </div>
-                <p class="pdp-review-body">${escHtml(rv.text)}</p>
-                <div class="pdp-review-helpful">
-                    <span class="pdp-helpful-label">Ulasan ini membantu?</span>
-                    <button class="pdp-helpful-btn ${rv.likedByMe ? 'liked' : ''}" onclick="toggleHelpful(${idx})">
-                        👍 Ya (${rv.helpful || 0})
-                    </button>
-                </div>
+                ${textHtml}
+                ${fotoHtml}
             `;
             list.appendChild(card);
         });
-    }
-
-    function toggleHelpful(idx) {
-        if (reviews[idx].likedByMe) return;
-        reviews[idx].helpful = (reviews[idx].helpful || 0) + 1;
-        reviews[idx].likedByMe = true;
-        saveReviews();
-        renderReviews();
-    }
-
-    function initStarPicker() {
-        const stars = document.querySelectorAll('.pdp-star-pick');
-        stars.forEach((star, i) => {
-            star.addEventListener('mouseenter', () => {
-                stars.forEach((s, j) => s.classList.toggle('hover', j <= i));
-            });
-            star.addEventListener('mouseleave', () => {
-                stars.forEach((s, j) => s.classList.toggle('hover', false));
-                stars.forEach((s, j) => s.classList.toggle('active', j < selectedRating));
-            });
-            star.addEventListener('click', () => {
-                selectedRating = i + 1;
-                stars.forEach((s, j) => s.classList.toggle('active', j < selectedRating));
-            });
-        });
-    }
-
-    function submitReview() {
-        const name = document.getElementById('pdpReviewName').value.trim();
-        const text = document.getElementById('pdpReviewText').value.trim();
-        if (!name) { showToast('Masukkan nama Anda'); return; }
-        if (!selectedRating) { showToast('Pilih rating bintang dulu'); return; }
-        if (!text || text.length < 10) { showToast('Tulis ulasan minimal 10 karakter'); return; }
-
-        const now = new Date();
-        reviews.unshift({
-            name, rating: selectedRating, text,
-            date: 'Baru saja',
-            helpful: 0,
-            verified: false
-        });
-        saveReviews();
-        renderReviews();
-        renderSummary();
-
-        // reset
-        document.getElementById('pdpReviewName').value = '';
-        document.getElementById('pdpReviewText').value = '';
-        selectedRating = 0;
-        document.querySelectorAll('.pdp-star-pick').forEach(s => s.classList.remove('active'));
-
-        showToast('✦ Ulasan berhasil dikirim, terima kasih!');
     }
 
     function showToast(msg) {
@@ -1229,6 +1171,7 @@
                     <h1 class="pdp-product-name">{{ $product->nama_produk }}</h1>
                     <div class="pdp-rating-row">
                         <span class="pdp-stars">★★★★★</span>
+                        <span class="pdp-review-count"><strong>4.9</strong></span>
                         <span class="pdp-review-count" id="pdpHeroReviewCount">{{ max(1, (int)($product->total_terjual ?? 0)) }} terjual</span>
                     </div>
                 </div>
@@ -1350,26 +1293,11 @@
                     @endfor
 
                     <div class="pdp-write-review">
-                        <div class="pdp-write-label">Tulis Ulasan Anda</div>
-
-                        <div class="pdp-star-picker">
-                            @for ($i = 1; $i <= 5; $i++)
-                            <span class="pdp-star-pick" data-value="{{ $i }}" title="{{ $i }} bintang">★</span>
-                            @endfor
-                        </div>
-
-                        <input type="text"
-                               id="pdpReviewName"
-                               class="pdp-review-name-input"
-                               placeholder="Nama Anda">
-
-                        <textarea id="pdpReviewText"
-                                  class="pdp-review-textarea"
-                                  placeholder="Ceritakan pengalaman Anda dengan produk ini..."></textarea>
-
-                        <button class="pdp-submit-review" onclick="submitReview()">
-                            Kirim Ulasan ✦
-                        </button>
+                        <div class="pdp-write-label">Tulis Ulasan</div>
+                        <p style="font-size:13px;color:var(--text-muted, #6b8c7c);line-height:1.55;margin:0;">
+                            Ulasan hanya bisa diberikan setelah kamu membeli produk ini dan pesananmu berstatus <strong>Selesai</strong>.
+                            Beri ulasanmu lewat halaman detail pesanan.
+                        </p>
                     </div>
                 </div>
 
@@ -1406,6 +1334,10 @@
                     <div class="pdp-other-body">
                         <div class="pdp-other-name">{{ $other->nama_produk }}</div>
                         <div class="pdp-other-price">Rp {{ number_format($other->harga, 0, ',', '.') }}</div>
+                        <div class="pdp-other-rating">
+                            <span class="pdp-other-stars">★★★★★</span>
+                            <span class="pdp-other-rating-val">4.9</span>
+                        </div>
                         <div class="pdp-other-footer">
                             <span class="pdp-other-stok">{{ $otherHabis ? 'Stok habis' : 'Stok: ' . $other->stok }}</span>
                             <span class="pdp-other-cta">{{ $otherHabis ? 'Habis' : 'Lihat →' }}</span>

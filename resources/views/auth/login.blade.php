@@ -252,6 +252,19 @@
         color: #991b1b;
     }
 
+    .auth-alert-success {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        border-color: rgba(74, 138, 106, 0.3);
+        background: #ecf7f1;
+        color: #1f6b48;
+    }
+
+    .auth-alert-success svg {
+        flex-shrink: 0;
+    }
+
     @media (max-width: 480px) {
         .auth-card {
             border-radius: 20px;
@@ -286,7 +299,12 @@
             <p class="auth-subtitle">Kelola UMKM dan pesanan dengan akun Anda.</p>
 
             @if (session('status'))
-                <div class="auth-alert" role="alert">{{ session('status') }}</div>
+                <div class="auth-alert auth-alert-success" role="status">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                        <path d="M12 2C6.48 2 2 6.48 2 12S6.48 22 12 22 22 17.52 22 12 17.52 2 12 2ZM10 17L5 12L6.41 10.59L10 14.17L17.59 6.58L19 8L10 17Z"/>
+                    </svg>
+                    <span>{{ session('status') }}</span>
+                </div>
             @endif
 
             <form method="POST" action="{{ route('login') }}">

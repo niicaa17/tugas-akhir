@@ -157,6 +157,9 @@
     .ufv-prod-body { padding: 13px 15px 15px; flex: 1; display: flex; flex-direction: column; }
     .ufv-prod-name { font-size: 14px; font-weight: 600; color: var(--ink); line-height: 1.3; margin-bottom: 4px; }
     .ufv-prod-price { font-family: 'Playfair Display', serif !important; font-size: 15px; font-weight: 600; color: var(--ink); margin-bottom: 10px; }
+    .ufv-prod-rating { display: flex; align-items: center; gap: 5px; margin-bottom: 8px; }
+    .ufv-prod-stars { color: var(--gold); font-size: 13px; letter-spacing: 1px; line-height: 1; }
+    .ufv-prod-rating-val { font-size: 12px; font-weight: 600; color: var(--ink); }
     .ufv-prod-foot { margin-top: auto; display: flex; align-items: center; justify-content: space-between; }
     .ufv-sold-lbl { font-size: 11px; font-weight: 500; color: var(--muted); }
     .ufv-buy-btn {
@@ -271,6 +274,10 @@
                     <div class="ufv-prod-body">
                         <div class="ufv-prod-name">{{ $product->nama_produk }}</div>
                         <div class="ufv-prod-price">Rp {{ number_format($product->harga, 0, ',', '.') }}</div>
+                        <div class="ufv-prod-rating">
+                            <span class="ufv-prod-stars">★★★★★</span>
+                            <span class="ufv-prod-rating-val">4.9</span>
+                        </div>
                         <div class="ufv-prod-foot">
                             <span class="ufv-sold-lbl">
                                 @if($isHabis)

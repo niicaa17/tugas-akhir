@@ -225,6 +225,9 @@
                                         'va_dana'  => 'DANA',
                                         'va_ovo'   => 'OVO',
                                         'va_gopay' => 'GoPay',
+                                        'bank_bni' => 'BNI',
+                                        'bank_bri' => 'BRI',
+                                        'bank_bca' => 'BCA',
                                     ];
                                     $paymentMethod = $methodLabelsShort[$rawMetode] ?? strtoupper($rawMetode);
                                 @endphp
