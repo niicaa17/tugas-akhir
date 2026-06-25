@@ -27,6 +27,23 @@
     @endif
 </head>
 <body>
+    @if (session('success'))
+        <div id="flash-toast" role="alert" style="position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:99999;background:#16a34a;color:#fff;padding:14px 22px;border-radius:12px;box-shadow:0 8px 28px rgba(0,0,0,.18);font-family:'Nunito',sans-serif;font-weight:600;display:flex;align-items:center;gap:10px;max-width:90vw;">
+            <span style="font-size:18px;line-height:1;">✓</span>
+            <span>{{ session('success') }}</span>
+        </div>
+        <script>
+            setTimeout(function () {
+                var t = document.getElementById('flash-toast');
+                if (!t) return;
+                t.style.transition = 'opacity .4s ease, transform .4s ease';
+                t.style.opacity = '0';
+                t.style.transform = 'translateX(-50%) translateY(-12px)';
+                setTimeout(function () { t.remove(); }, 400);
+            }, 3000);
+        </script>
+    @endif
+
     <div id="app">
         <nav class="navbar navbar-expand-md navbar-light bg-white shadow-sm">
             <div class="container">

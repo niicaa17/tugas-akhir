@@ -48,4 +48,13 @@ class LoginController extends Controller
     {
         return Auth::user()->isAdmin() ? route('admin.dashboard') : route('user.dashboard');
     }
+
+    /**
+     * Flash a success message after the user is authenticated.
+     */
+    protected function authenticated(Request $request, $user)
+    {
+        return redirect()->intended($this->redirectTo())
+            ->with('success', 'Login berhasil. Selamat datang, ' . $user->name . '!');
+    }
 }

@@ -307,6 +307,12 @@
                 </div>
             @endif
 
+            @if ($errors->any())
+                <div class="auth-alert" role="alert">
+                    <span>{{ $errors->first() }}</span>
+                </div>
+            @endif
+
             <form method="POST" action="{{ route('login') }}">
                 @csrf
 
@@ -318,9 +324,6 @@
                         </svg>
                     </span>
                     <input id="email" type="email" class="form-control @error('email') is-invalid @enderror" name="email" value="{{ old('email') }}" required autocomplete="email" autofocus placeholder="nama@email.com">
-                    @error('email')
-                        <span class="invalid-feedback d-block" role="alert">{{ $message }}</span>
-                    @enderror
                 </div>
 
                 <label class="auth-label" for="password">Kata sandi</label>
@@ -331,9 +334,6 @@
                         </svg>
                     </span>
                     <input id="password" type="password" class="form-control @error('password') is-invalid @enderror" name="password" required autocomplete="current-password" placeholder="••••••••">
-                    @error('password')
-                        <span class="invalid-feedback d-block" role="alert">{{ $message }}</span>
-                    @enderror
                 </div>
 
                 <button type="submit" class="btn-auth-main">Masuk</button>
