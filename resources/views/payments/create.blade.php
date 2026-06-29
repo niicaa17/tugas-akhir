@@ -119,6 +119,69 @@
     }
     .pay-alert::before { content: '!'; width: 22px; height: 22px; border-radius: 50%; background: #b8364c; color: #fff; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0; }
 
+    /* ── TOAST (notif alamat belum lengkap) ── */
+    .pay-toast {
+        position: fixed;
+        left: 50%;
+        bottom: 28px;
+        transform: translate(-50%, 140%);
+        z-index: 9999;
+        display: flex; align-items: flex-start; gap: 13px;
+        width: min(420px, calc(100vw - 32px));
+        padding: 15px 17px;
+        border-radius: 14px;
+        background: rgba(26, 46, 26, 0.96);
+        color: #fff;
+        box-shadow: 0 16px 40px rgba(26,46,26,0.32);
+        border: 1px solid rgba(255,255,255,0.08);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        opacity: 0;
+        pointer-events: none;
+        transition: transform .42s cubic-bezier(.16,1,.3,1), opacity .3s ease;
+    }
+    .pay-toast.is-show {
+        transform: translate(-50%, 0);
+        opacity: 1;
+        pointer-events: auto;
+    }
+    .pay-toast-icon {
+        width: 34px; height: 34px; flex-shrink: 0;
+        border-radius: 10px;
+        background: rgba(200,146,42,0.22);
+        color: var(--gold-pale);
+        display: inline-flex; align-items: center; justify-content: center;
+    }
+    .pay-toast-body { flex: 1; padding-top: 1px; }
+    .pay-toast-title {
+        font-size: 14px; font-weight: 700; letter-spacing: -.01em;
+        margin-bottom: 3px;
+    }
+    .pay-toast-msg {
+        font-size: 12.5px; line-height: 1.5;
+        color: rgba(255,255,255,0.78);
+    }
+    .pay-toast-close {
+        flex-shrink: 0;
+        width: 24px; height: 24px;
+        margin: -2px -3px 0 0;
+        border: none; background: transparent;
+        color: rgba(255,255,255,0.55);
+        cursor: pointer; border-radius: 7px;
+        display: inline-flex; align-items: center; justify-content: center;
+        transition: all .15s;
+    }
+    .pay-toast-close:hover { background: rgba(255,255,255,0.12); color: #fff; }
+    .pay-toast-bar {
+        position: absolute; left: 0; bottom: 0;
+        height: 3px; width: 100%;
+        border-radius: 0 0 14px 14px;
+        background: linear-gradient(90deg, var(--gold), var(--gold-pale));
+        transform-origin: left;
+        animation: payToastBar 4s linear forwards;
+    }
+    @keyframes payToastBar { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+
     /* ── ADDRESS CARD (Shopee top section) ── */
     .pay-address-card {
         background: var(--cream);
@@ -1042,6 +1105,28 @@
             if (addrEdit) addrEdit.innerHTML = closeIconHtml;
         }
 
+        // Toast: notif cantik kalau alamat belum lengkap
+        const toastEl = document.getElementById('payToast');
+        const toastMsgEl = document.getElementById('payToastMsg');
+        const toastCloseEl = document.getElementById('payToastClose');
+        let toastTimer = null;
+
+        function showToast(msg) {
+            if (!toastEl) return;
+            if (toastMsgEl && msg) toastMsgEl.textContent = msg;
+            // restart progress-bar animation
+            const bar = toastEl.querySelector('.pay-toast-bar');
+            if (bar) { bar.style.animation = 'none'; void bar.offsetWidth; bar.style.animation = ''; }
+            toastEl.classList.add('is-show');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(hideToast, 4000);
+        }
+        function hideToast() {
+            if (toastEl) toastEl.classList.remove('is-show');
+            clearTimeout(toastTimer);
+        }
+        if (toastCloseEl) toastCloseEl.addEventListener('click', hideToast);
+
         // Client-side guard: kalau user klik "Buat Pesanan" tapi alamat belum lengkap,
         // buka form, fokus ke field kosong pertama, dan beri pesan ringkas.
         const payForm = document.getElementById('payForm');
@@ -1058,13 +1143,34 @@
                 empties[0].classList.add('is-error');
                 empties[0].focus();
                 empties[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
-                alert('Lengkapi alamat pengiriman dulu sebelum membuat pesanan.');
+                showToast('Lengkapi alamat pengiriman dulu sebelum membuat pesanan.');
             });
         }
     });
 </script>
 
 <div class="pay-page">
+
+    {{-- TOAST: notif alamat belum lengkap --}}
+    <div class="pay-toast" id="payToast" role="alert" aria-live="assertive">
+        <div class="pay-toast-icon">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+                <path d="M9 1.6C6.1 1.6 3.8 4 3.8 6.9c0 3.9 5.2 9.1 5.2 9.1s5.2-5.2 5.2-9.1C14.2 4 11.9 1.6 9 1.6z" stroke="currentColor" stroke-width="1.5"/>
+                <circle cx="9" cy="6.9" r="1.8" stroke="currentColor" stroke-width="1.5"/>
+            </svg>
+        </div>
+        <div class="pay-toast-body">
+            <div class="pay-toast-title">Alamat belum lengkap</div>
+            <div class="pay-toast-msg" id="payToastMsg">Lengkapi alamat pengiriman dulu sebelum membuat pesanan.</div>
+        </div>
+        <button type="button" class="pay-toast-close" id="payToastClose" aria-label="Tutup notifikasi">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                <path d="M3 3l6 6M9 3l-6 6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+            </svg>
+        </button>
+        <span class="pay-toast-bar"></span>
+    </div>
+
 
     {{-- TOPBAR --}}
     <div class="pay-topbar">
