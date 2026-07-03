@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Keuangan;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class KeuanganController extends Controller
 {
@@ -25,8 +26,33 @@ class KeuanganController extends Controller
         }
         
         $keuangans = $query->paginate(10);
+
+        // Chart data: monthly pemasukan & pengeluaran for the selected year
+        $chartData = Keuangan::select(
+                DB::raw('MONTH(tanggal) as bulan'),
+                'jenis',
+                DB::raw('SUM(jumlah) as total')
+            )
+            ->whereYear('tanggal', $year)
+            ->groupBy(DB::raw('MONTH(tanggal)'), 'jenis')
+            ->orderBy(DB::raw('MONTH(tanggal)'))
+            ->get();
+
+        $monthlyPemasukan = array_fill(1, 12, 0);
+        $monthlyPengeluaran = array_fill(1, 12, 0);
+
+        foreach ($chartData as $row) {
+            if ($row->jenis === 'pemasukan') {
+                $monthlyPemasukan[(int) $row->bulan] = (int) $row->total;
+            } else {
+                $monthlyPengeluaran[(int) $row->bulan] = (int) $row->total;
+            }
+        }
+
+        $chartPemasukan = array_values($monthlyPemasukan);
+        $chartPengeluaran = array_values($monthlyPengeluaran);
         
-        return view('keuangans.index', compact('keuangans', 'month', 'year'));
+        return view('keuangans.index', compact('keuangans', 'month', 'year', 'chartPemasukan', 'chartPengeluaran'));
     }
 
     /**

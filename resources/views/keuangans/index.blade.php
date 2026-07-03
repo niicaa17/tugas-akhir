@@ -136,10 +136,112 @@
         color: var(--ink-mid);
     }
 
+    /* ===== Chart Section ===== */
+    .chart-section {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 18px;
+        margin-bottom: 22px;
+        animation: fadeInUp 0.6s ease both;
+        animation-delay: 0.15s;
+    }
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(18px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+    .chart-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+    .chart-header {
+        padding: 20px 24px 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+    .chart-title {
+        font-family: 'Playfair Display', Georgia, serif;
+        font-size: 17px;
+        font-weight: 700;
+        color: var(--ink);
+    }
+    .chart-subtitle {
+        font-size: 12px;
+        color: var(--muted);
+        margin-top: 2px;
+    }
+    .chart-legend {
+        display: flex;
+        align-items: center;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--ink-soft);
+    }
+    .legend-dot {
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        border-radius: 3px;
+        margin-right: 5px;
+    }
+    .legend-income { background: var(--sage); }
+    .legend-expense { background: var(--gold); }
+    .chart-body {
+        padding: 16px 20px 20px;
+        flex: 1;
+        min-height: 260px;
+        position: relative;
+    }
+    .chart-body-doughnut {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 200px;
+        max-height: 220px;
+    }
+    .doughnut-stats {
+        padding: 0 24px 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    .doughnut-stat {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+    }
+    .doughnut-stat-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 3px;
+        flex-shrink: 0;
+    }
+    .doughnut-stat-dot.income { background: var(--sage); }
+    .doughnut-stat-dot.expense { background: var(--gold); }
+    .doughnut-stat-label {
+        color: var(--muted);
+        font-weight: 500;
+        flex: 1;
+    }
+    .doughnut-stat-value {
+        font-weight: 700;
+        font-size: 13px;
+    }
+    .doughnut-stat-value.income { color: var(--sage-deep); }
+    .doughnut-stat-value.expense { color: #8B6914; }
+
     @media (max-width: 900px) {
         .sidebar { width: 220px; }
         .main { margin-left: 220px; padding: 24px 22px; }
         .stats-grid { grid-template-columns: 1fr; }
+        .chart-section { grid-template-columns: 1fr; }
         .month-filter-wrap { max-width: 100%; }
     }
     @media (max-width: 680px) {
@@ -147,6 +249,7 @@
         .main { margin-left: 0; padding: 20px 16px; }
         .topbar { flex-direction: column; }
         .page-title { font-size: 24px; }
+        .chart-section { grid-template-columns: 1fr; }
         .month-filter-wrap { max-width: 100%; }
     }
 </style>
@@ -263,6 +366,48 @@
             </div>
         </div>
 
+        {{-- ===== GRAFIK KEUANGAN ===== --}}
+        <div class="chart-section">
+            <div class="chart-card chart-card-bar">
+                <div class="chart-header">
+                    <div>
+                        <div class="chart-title">Grafik Keuangan Bulanan</div>
+                        <div class="chart-subtitle">Pemasukan vs Pengeluaran — {{ $month && isset($months[$month]) ? $months[$month] : 'Semua Bulan' }} {{ $year }}</div>
+                    </div>
+                    <div class="chart-legend">
+                        <span class="legend-dot legend-income"></span> Pemasukan
+                        <span class="legend-dot legend-expense" style="margin-left:14px;"></span> Pengeluaran
+                    </div>
+                </div>
+                <div class="chart-body">
+                    <canvas id="barChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-card chart-card-doughnut">
+                <div class="chart-header">
+                    <div>
+                        <div class="chart-title">Proporsi</div>
+                        <div class="chart-subtitle">Pemasukan & Pengeluaran</div>
+                    </div>
+                </div>
+                <div class="chart-body chart-body-doughnut">
+                    <canvas id="doughnutChart"></canvas>
+                </div>
+                <div class="doughnut-stats">
+                    <div class="doughnut-stat">
+                        <span class="doughnut-stat-dot income"></span>
+                        <span class="doughnut-stat-label">Pemasukan</span>
+                        <span class="doughnut-stat-value income">Rp {{ number_format($totalPemasukan, 0, ',', '.') }}</span>
+                    </div>
+                    <div class="doughnut-stat">
+                        <span class="doughnut-stat-dot expense"></span>
+                        <span class="doughnut-stat-label">Pengeluaran</span>
+                        <span class="doughnut-stat-value expense">Rp {{ number_format($totalPengeluaran, 0, ',', '.') }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="table-card">
             <div class="table-toolbar">
                 <div class="table-title">Data Keuangan</div>
@@ -352,5 +497,164 @@
         }
         window.location.href = url.toString();
     }
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const allLabels = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Ags','Sep','Okt','Nov','Des'];
+        const allPemasukan = @json($chartPemasukan);
+        const allPengeluaran = @json($chartPengeluaran);
+        const selectedMonth = @json($month);
+
+        // If a specific month is selected, show only that month; otherwise show all 12
+        let labels, pemasukan, pengeluaran;
+        if (selectedMonth && selectedMonth >= 1 && selectedMonth <= 12) {
+            const idx = selectedMonth - 1;
+            labels = [allLabels[idx]];
+            pemasukan = [allPemasukan[idx]];
+            pengeluaran = [allPengeluaran[idx]];
+        } else {
+            labels = allLabels;
+            pemasukan = allPemasukan;
+            pengeluaran = allPengeluaran;
+        }
+
+        // ---- Bar Chart ----
+        const barCtx = document.getElementById('barChart').getContext('2d');
+
+        const incomeGradient = barCtx.createLinearGradient(0, 0, 0, 320);
+        incomeGradient.addColorStop(0, '#7CB99A');
+        incomeGradient.addColorStop(1, '#A8D4BC');
+
+        const expenseGradient = barCtx.createLinearGradient(0, 0, 0, 320);
+        expenseGradient.addColorStop(0, '#C9A84C');
+        expenseGradient.addColorStop(1, '#E8C97A');
+
+        new Chart(barCtx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Pemasukan',
+                        data: pemasukan,
+                        backgroundColor: incomeGradient,
+                        borderRadius: 6,
+                        borderSkipped: false,
+                        barPercentage: 0.55,
+                        categoryPercentage: 0.65
+                    },
+                    {
+                        label: 'Pengeluaran',
+                        data: pengeluaran,
+                        backgroundColor: expenseGradient,
+                        borderRadius: 6,
+                        borderSkipped: false,
+                        barPercentage: 0.55,
+                        categoryPercentage: 0.65
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: {
+                    duration: 900,
+                    easing: 'easeOutQuart'
+                },
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#1C2B24',
+                        titleFont: { family: 'DM Sans', weight: '600', size: 13 },
+                        bodyFont: { family: 'DM Sans', size: 12 },
+                        padding: 12,
+                        cornerRadius: 10,
+                        callbacks: {
+                            label: function(ctx) {
+                                return ctx.dataset.label + ': Rp ' + ctx.parsed.y.toLocaleString('id-ID');
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { display: false },
+                        ticks: {
+                            font: { family: 'DM Sans', size: 11, weight: '600' },
+                            color: '#8A9E93'
+                        },
+                        border: { display: false }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: 'rgba(124,185,154,0.10)', drawBorder: false },
+                        ticks: {
+                            font: { family: 'DM Sans', size: 11 },
+                            color: '#8A9E93',
+                            callback: function(v) {
+                                if (v >= 1000000) return 'Rp ' + (v/1000000).toFixed(1) + ' jt';
+                                if (v >= 1000) return 'Rp ' + (v/1000).toFixed(0) + ' rb';
+                                return 'Rp ' + v;
+                            }
+                        },
+                        border: { display: false }
+                    }
+                }
+            }
+        });
+
+        // ---- Doughnut Chart ----
+        const totalPemasukan = pemasukan.reduce((a, b) => a + b, 0);
+        const totalPengeluaran = pengeluaran.reduce((a, b) => a + b, 0);
+
+        new Chart(document.getElementById('doughnutChart'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Pemasukan', 'Pengeluaran'],
+                datasets: [{
+                    data: [totalPemasukan || 0, totalPengeluaran || 0],
+                    backgroundColor: ['#7CB99A', '#C9A84C'],
+                    hoverBackgroundColor: ['#4A8A6A', '#B8953E'],
+                    borderWidth: 3,
+                    borderColor: '#ffffff',
+                    borderRadius: 4,
+                    spacing: 3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                cutout: '68%',
+                animation: {
+                    animateRotate: true,
+                    duration: 1100,
+                    easing: 'easeOutCirc'
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#1C2B24',
+                        titleFont: { family: 'DM Sans', weight: '600', size: 13 },
+                        bodyFont: { family: 'DM Sans', size: 12 },
+                        padding: 12,
+                        cornerRadius: 10,
+                        callbacks: {
+                            label: function(ctx) {
+                                const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
+                                const pct = total > 0 ? ((ctx.parsed / total) * 100).toFixed(1) : 0;
+                                return ctx.label + ': Rp ' + ctx.parsed.toLocaleString('id-ID') + ' (' + pct + '%)';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    });
 </script>
 @endsection
