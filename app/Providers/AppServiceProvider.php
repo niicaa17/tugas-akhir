@@ -12,7 +12,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Pada hosting InfinityFree, folder public ada di parent directory
+        // htdocs/ = public, htdocs/app-files/ = base app
+        if ($this->app->environment('production')) {
+            $this->app->usePublicPath(base_path('../'));
+        }
     }
 
     /**
