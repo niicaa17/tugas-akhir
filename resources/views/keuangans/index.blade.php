@@ -261,8 +261,14 @@
     if (!isset($year)) {
         $year = now()->year;
     }
-    $totalPemasukan = $keuangans->where('jenis', 'pemasukan')->sum('jumlah');
-    $totalPengeluaran = $keuangans->where('jenis', 'pengeluaran')->sum('jumlah');
+    if (!isset($availableYears)) {
+        $availableYears = [now()->year];
+    }
+    $months = [
+        1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April', 
+        5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+        9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+    ];
 @endphp
 
 <div class="layout">
@@ -299,17 +305,23 @@
             </div>
             <div class="topbar-actions">
                 <div class="month-filter-control">
+                    <span class="month-filter-label">📅 Tahun:</span>
+                    <div class="month-select-wrapper">
+                        <select class="month-select" id="yearSelect" onchange="applyFilters()">
+                            <option value="all" {{ $year === 'all' ? 'selected' : '' }}>Semua Tahun</option>
+                            @foreach($availableYears as $y)
+                                <option value="{{ $y }}" {{ (string)$year === (string)$y ? 'selected' : '' }}>
+                                    {{ $y }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+                <div class="month-filter-control">
                     <span class="month-filter-label">📅 Bulan:</span>
                     <div class="month-select-wrapper">
-                        @php
-                            $months = [
-                                1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April', 
-                                5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
-                                9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
-                            ];
-                        @endphp
-                        <select class="month-select" onchange="filterByMonth(this.value)">
-                            <option value="">Semua</option>
+                        <select class="month-select" id="monthSelect" onchange="applyFilters()">
+                            <option value="">Semua Bulan</option>
                             @foreach($months as $num => $name)
                                 <option value="{{ $num }}" {{ $month == $num ? 'selected' : '' }}>
                                     {{ $name }}
@@ -329,27 +341,6 @@
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         @endif
-
-        <div class="month-filter-wrap">
-            <div class="month-filter-title">📅 Filter Bulan:</div>
-            <div class="month-select-wrapper">
-                @php
-                    $months = [
-                        1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April', 
-                        5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
-                        9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
-                    ];
-                @endphp
-                <select class="month-select" onchange="filterByMonth(this.value)">
-                    <option value="">📊 Lihat Semua Data</option>
-                    @foreach($months as $num => $name)
-                        <option value="{{ $num }}" {{ $month == $num ? 'selected' : '' }}>
-                            {{ $name }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
-        </div>
 
         <div class="stats-grid">
             <div class="stat-card income">
@@ -372,7 +363,7 @@
                 <div class="chart-header">
                     <div>
                         <div class="chart-title">Grafik Keuangan Bulanan</div>
-                        <div class="chart-subtitle">Pemasukan vs Pengeluaran — {{ $month && isset($months[$month]) ? $months[$month] : 'Semua Bulan' }} {{ $year }}</div>
+                        <div class="chart-subtitle">Pemasukan vs Pengeluaran — {{ $month && isset($months[$month]) ? $months[$month] : 'Semua Bulan' }} {{ $year === 'all' ? '(Semua Tahun)' : $year }}</div>
                     </div>
                     <div class="chart-legend">
                         <span class="legend-dot legend-income"></span> Pemasukan
@@ -463,6 +454,13 @@
 
 <script>
     function printKeuangan() {
+        const yearVal = document.getElementById('yearSelect') ? document.getElementById('yearSelect').value : '{{ $year }}';
+        const monthVal = document.getElementById('monthSelect') ? document.getElementById('monthSelect').value : '{{ $month }}';
+        
+        let printUrl = new URL("{{ route('keuangans.print') }}", window.location.origin);
+        if (yearVal) printUrl.searchParams.set('year', yearVal);
+        if (monthVal) printUrl.searchParams.set('month', monthVal);
+
         const iframe = document.createElement('iframe');
         iframe.style.position = 'fixed';
         iframe.style.right = '0';
@@ -470,14 +468,14 @@
         iframe.style.width = '0';
         iframe.style.height = '0';
         iframe.style.border = '0';
-        iframe.src = "{{ route('keuangans.print') }}";
+        iframe.src = printUrl.toString();
 
         iframe.onload = function () {
             try {
                 iframe.contentWindow.focus();
                 iframe.contentWindow.print();
             } catch (error) {
-                window.open("{{ route('keuangans.print') }}", '_blank');
+                window.open(printUrl.toString(), '_blank');
             }
 
             setTimeout(() => {
@@ -488,13 +486,27 @@
         document.body.appendChild(iframe);
     }
 
-    function filterByMonth(month) {
+    function applyFilters() {
+        const yearVal = document.getElementById('yearSelect').value;
+        const monthVal = document.getElementById('monthSelect').value;
         const url = new URL(window.location);
-        if (month === '' || month === null) {
-            url.searchParams.delete('month');
+
+        if (yearVal && yearVal !== 'all') {
+            url.searchParams.set('year', yearVal);
+        } else if (yearVal === 'all') {
+            url.searchParams.set('year', 'all');
         } else {
-            url.searchParams.set('month', month);
+            url.searchParams.delete('year');
         }
+
+        if (monthVal) {
+            url.searchParams.set('month', monthVal);
+        } else {
+            url.searchParams.delete('month');
+        }
+
+        url.searchParams.delete('page');
+
         window.location.href = url.toString();
     }
 </script>

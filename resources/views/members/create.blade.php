@@ -141,7 +141,13 @@
 
                     <div class="mb-4">
                         <label for="jabatan" class="form-label">Jabatan</label>
-                        <input type="text" name="jabatan" id="jabatan" class="form-control @error('jabatan') is-invalid @enderror" value="{{ old('jabatan') }}" placeholder="Contoh: Ketua, Bendahara, Produksi" required>
+                        <select name="jabatan" id="jabatan" class="form-control @error('jabatan') is-invalid @enderror" required>
+                            <option value="">Pilih Jabatan</option>
+                            <option value="Ketua" {{ old('jabatan') == 'Ketua' ? 'selected' : '' }}>Ketua</option>
+                            <option value="Bendahara" {{ old('jabatan') == 'Bendahara' ? 'selected' : '' }}>Bendahara</option>
+                            <option value="Anggota" {{ old('jabatan') == 'Anggota' ? 'selected' : '' }}>Anggota</option>
+                            <option value="Sekretaris" {{ old('jabatan') == 'Sekretaris' ? 'selected' : '' }}>Sekretaris</option>
+                        </select>
                         @error('jabatan')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
 

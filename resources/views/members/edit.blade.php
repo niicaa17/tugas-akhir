@@ -140,11 +140,18 @@
                         @error('telepon_karyawan')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
 
-                    <div class="mb-4">
+                   <div class="mb-4">
                         <label for="jabatan" class="form-label">Jabatan</label>
-                        <input type="text" name="jabatan" id="jabatan" class="form-control @error('jabatan') is-invalid @enderror" value="{{ old('jabatan', $member->jabatan) }}" required>
+                        <select name="jabatan" id="jabatan" class="form-control @error('jabatan') is-invalid @enderror" required>
+                            <option value="">Pilih Jabatan</option>
+                            <option value="Ketua" {{ old('jabatan', $member->jabatan) == 'Ketua' ? 'selected' : '' }}>Ketua</option>
+                            <option value="Bendahara" {{ old('jabatan', $member->jabatan) == 'Bendahara' ? 'selected' : '' }}>Bendahara</option>
+                            <option value="Anggota" {{ old('jabatan', $member->jabatan) == 'Anggota' ? 'selected' : '' }}>Anggota</option>
+                            <option value="Sekretaris" {{ old('jabatan', $member->jabatan) == 'Sekretaris' ? 'selected' : '' }}>Sekretaris</option>
+                        </select>
                         @error('jabatan')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
+
 
                     <button type="submit" class="btn-save">Update Data</button>
                 </form>

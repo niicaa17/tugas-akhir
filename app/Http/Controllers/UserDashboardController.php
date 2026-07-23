@@ -110,8 +110,8 @@ class UserDashboardController extends Controller
             ->where('status', '!=', 'dibatalkan')
             ->sum('total_harga');
 
-        $cartItemCount = optional($user->cart)
-            ? $user->cart->cartItems()->sum('qty')
+        $cartItemCount = $user->cart
+            ? (int) $user->cart->cartItems()->sum('qty')
             : 0;
 
         $lastOrder = (clone $ordersQuery)->latest()->first();

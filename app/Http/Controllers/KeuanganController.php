@@ -16,25 +16,48 @@ class KeuanganController extends Controller
     {
         $month = $request->query('month');
         $year = $request->query('year', now()->year);
+
+        $dbYears = Keuangan::selectRaw('YEAR(tanggal) as year')
+            ->distinct()
+            ->pluck('year')
+            ->map(fn($y) => (int) $y)
+            ->toArray();
+
+        $startYear = 2024;
+        $currentYear = (int) now()->year;
+        $allYears = array_unique(array_merge(range($startYear, max($startYear, $currentYear)), $dbYears));
+        sort($allYears);
+        $availableYears = array_values($allYears);
         
         $query = Keuangan::with(['product.umkm']);
         
+        // Filter by year if specified (and not 'all')
+        if ($year && $year !== 'all' && is_numeric($year)) {
+            $query->whereYear('tanggal', $year);
+        }
+
         // Filter by month if provided
         if ($month && is_numeric($month) && $month >= 1 && $month <= 12) {
-            $query->whereYear('tanggal', $year)
-                  ->whereMonth('tanggal', $month);
+            $query->whereMonth('tanggal', $month);
         }
         
-        $keuangans = $query->paginate(10);
+        $totalPemasukan = (clone $query)->where('jenis', 'pemasukan')->sum('jumlah');
+        $totalPengeluaran = (clone $query)->where('jenis', 'pengeluaran')->sum('jumlah');
+
+        $keuangans = $query->orderBy('tanggal', 'desc')->paginate(10)->withQueryString();
 
         // Chart data: monthly pemasukan & pengeluaran for the selected year
-        $chartData = Keuangan::select(
+        $chartQuery = Keuangan::select(
                 DB::raw('MONTH(tanggal) as bulan'),
                 'jenis',
                 DB::raw('SUM(jumlah) as total')
-            )
-            ->whereYear('tanggal', $year)
-            ->groupBy(DB::raw('MONTH(tanggal)'), 'jenis')
+            );
+
+        if ($year && $year !== 'all' && is_numeric($year)) {
+            $chartQuery->whereYear('tanggal', $year);
+        }
+
+        $chartData = $chartQuery->groupBy(DB::raw('MONTH(tanggal)'), 'jenis')
             ->orderBy(DB::raw('MONTH(tanggal)'))
             ->get();
 
@@ -52,7 +75,7 @@ class KeuanganController extends Controller
         $chartPemasukan = array_values($monthlyPemasukan);
         $chartPengeluaran = array_values($monthlyPengeluaran);
         
-        return view('keuangans.index', compact('keuangans', 'month', 'year', 'chartPemasukan', 'chartPengeluaran'));
+        return view('keuangans.index', compact('keuangans', 'month', 'year', 'availableYears', 'chartPemasukan', 'chartPengeluaran', 'totalPemasukan', 'totalPengeluaran'));
     }
 
     /**
@@ -140,12 +163,28 @@ class KeuanganController extends Controller
         $month = $request->query('month');
         $year = $request->query('year', now()->year);
         
+        $dbYears = Keuangan::selectRaw('YEAR(tanggal) as year')
+            ->distinct()
+            ->pluck('year')
+            ->map(fn($y) => (int) $y)
+            ->toArray();
+
+        $startYear = 2024;
+        $currentYear = (int) now()->year;
+        $allYears = array_unique(array_merge(range($startYear, max($startYear, $currentYear)), $dbYears));
+        sort($allYears);
+        $availableYears = array_values($allYears);
+
         $query = Keuangan::with(['product.umkm']);
         
+        // Filter by year if specified (and not 'all')
+        if ($year && $year !== 'all' && is_numeric($year)) {
+            $query->whereYear('tanggal', $year);
+        }
+
         // Filter by month if provided
         if ($month && is_numeric($month) && $month >= 1 && $month <= 12) {
-            $query->whereYear('tanggal', $year)
-                  ->whereMonth('tanggal', $month);
+            $query->whereMonth('tanggal', $month);
         }
         
         $keuangans = $query->orderBy('tanggal', 'desc')->get();
@@ -154,6 +193,6 @@ class KeuanganController extends Controller
         $totalPengeluaran = $keuangans->where('jenis', 'pengeluaran')->sum('jumlah');
         $saldo = $totalPemasukan - $totalPengeluaran;
 
-        return view('keuangans.print', compact('keuangans', 'totalPemasukan', 'totalPengeluaran', 'saldo', 'month', 'year'));
+        return view('keuangans.print', compact('keuangans', 'totalPemasukan', 'totalPengeluaran', 'saldo', 'month', 'year', 'availableYears'));
     }
 }

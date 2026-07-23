@@ -190,7 +190,7 @@
                             <thead>
                                 <tr>
                                     <th>Nama Karyawan</th>
-                                    <th>UMKM</th>
+                                    {{-- <th>UMKM</th> --}}
                                     <th>Alamat</th>
                                     <th>Telepon</th>
                                     <th>Jabatan</th>
@@ -203,9 +203,9 @@
                                         <td>
                                             <div class="fw-semibold">{{ $member->nama_karyawan }}</div>
                                         </td>
-                                        <td>
+                                        {{-- <td>
                                             <span class="badge-soft badge-umkm">{{ $member->umkm->nama_umkm ?? '-' }}</span>
-                                        </td>
+                                        </td> --}}
                                         <td>{{ $member->alamat_karyawan ?: '-' }}</td>
                                         <td>{{ $member->telepon_karyawan ?: '-' }}</td>
                                         <td>

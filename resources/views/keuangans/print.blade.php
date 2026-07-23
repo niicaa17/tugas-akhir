@@ -373,6 +373,14 @@
             if (!isset($year)) {
                 $year = now()->year;
             }
+            if (!isset($availableYears)) {
+                $availableYears = [now()->year];
+            }
+            $months = [
+                1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April', 
+                5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+                9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+            ];
         @endphp
         <div class="no-print hero-card">
             <div class="hero-top">
@@ -388,24 +396,29 @@
                 <a href="{{ route('keuangans.index') }}" class="btn-choice btn-back">← Kembali</a>
             </div>
 
+            <div class="month-selector" id="yearSelector" style="margin-bottom: 10px;">
+                <div class="month-selector-label">📅 Pilih Tahun:</div>
+                <button type="button" class="month-btn {{ $year === 'all' ? 'active' : '' }}" onclick="filterPrint('year', 'all')">
+                    Semua Tahun
+                </button>
+                @foreach($availableYears as $y)
+                    <button type="button" class="month-btn {{ (string)$year === (string)$y ? 'active' : '' }}" onclick="filterPrint('year', '{{ $y }}')">
+                        {{ $y }}
+                    </button>
+                @endforeach
+            </div>
+
             <div class="month-selector" id="monthSelector">
                 <div class="month-selector-label">📅 Pilih Bulan:</div>
-                @php
-                    $months = [
-                        1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April', 
-                        5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
-                        9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
-                    ];
-                @endphp
                 @foreach($months as $num => $name)
                     <button type="button" class="month-btn {{ $month == $num ? 'active' : '' }}" 
-                            onclick="filterByMonth({{ $num }})">
+                            onclick="filterPrint('month', {{ $num }})">
                         {{ $name }}
                     </button>
                 @endforeach
                 <button type="button" class="month-btn month-btn-all {{ is_null($month) ? 'active' : '' }}" 
-                        onclick="filterByMonth(null)">
-                    📊 Lihat Semua Data
+                        onclick="filterPrint('month', null)">
+                    📊 Lihat Semua Bulan
                 </button>
             </div>
         </div>
@@ -415,8 +428,10 @@
                 <div>
                     <div class="report-title">Laporan Keuangan</div>
                     <div class="report-subtitle">
-                        @if($month)
-                            Data bulan @php echo ['', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'][$month]; @endphp tahun {{ $year }}
+                        @if($month && isset($months[$month]))
+                            Data bulan {{ $months[$month] }} {{ $year === 'all' ? '(Semua Tahun)' : 'tahun ' . $year }}
+                        @elseif($year && $year !== 'all')
+                            Data seluruh bulan tahun {{ $year }}
                         @else
                             Semua data keuangan
                         @endif
@@ -492,12 +507,22 @@
     </div>
 
     <script>
-        function filterByMonth(month) {
+        function filterPrint(type, value) {
             const url = new URL(window.location);
-            if (month === null) {
-                url.searchParams.delete('month');
-            } else {
-                url.searchParams.set('month', month);
+            if (type === 'year') {
+                if (value === 'all') {
+                    url.searchParams.set('year', 'all');
+                } else if (value) {
+                    url.searchParams.set('year', value);
+                } else {
+                    url.searchParams.delete('year');
+                }
+            } else if (type === 'month') {
+                if (value === null || value === '') {
+                    url.searchParams.delete('month');
+                } else {
+                    url.searchParams.set('month', value);
+                }
             }
             window.location.href = url.toString();
         }
